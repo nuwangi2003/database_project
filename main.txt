@@ -1,0 +1,13 @@
+
+1) Create Database -> 
+	CREATE DATABASE db_project;
+
+	
+2) Create User Table ->
+	1.CREATE TABLE user(
+	  user_id char(3) PRIMARY KEY,
+	  email VARCHAR(50) NOT NULL,
+ 	  password VARCHAR(10) NOT NULL,
+	  department VARCHAR(15) NOT NULL);
+	
+
