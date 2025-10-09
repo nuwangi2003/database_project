@@ -1,0 +1,25 @@
+1) CREATE table for student
+
+CREATE TABLE student(
+    user_id CHAR(3) PRIMARY KEY,
+    reg_no char(15) NOT NULL,
+    satus VARCHAR(15)
+);
+
+
+
+2) CREATE table for tech_officer
+
+CREATE TABLE tech_officer(
+    user_id CHAR(3) NOT NULL,
+    phone_number char(10)
+
+);
+
+3)CREATE table for student course
+
+CREATE TABLE student_course(
+    course_id CHAR(3) NOT NULL,
+    user_id CHAR(3) NOT NULL
+);
+
