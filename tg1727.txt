@@ -1,0 +1,28 @@
+				// tech_officer
+
+CREATE TABLE tech_officer(
+	User_id INT ,
+	bod DATE ,
+	FOREIGN KEY(lec_id) REFERENCES user(User_id)
+	
+);
+
+				// dean
+CREATE TABLE dean(
+	Lecture_id INT ,
+	Term_start DATE,
+	Term_end DATE,
+	FOREIGN KEY(Lecture_id) REFERENCES lecture(User_id)
+	
+	
+);
+
+				// cource
+CREATE TABLE cource(
+	Course_id INT PRIMARY KEY,
+	Name VARCHAR(25),
+	Cradit CHAR(5),
+	Mark_id INT,
+	FOREIGN KEY(Mark_id) REFERENCES Marks(Mark_id)
+	
+);
