@@ -102,8 +102,22 @@ INSERT INTO attendance VALUES (1, 'U001', 'C001', '2025-10-13', 'Present', FALSE
 
 **Add Marks:**
 ```sql
-INSERT INTO marks (quiz1_marks, final_theory, final_practical, final_marks)
-VALUES (15.5, 45.0, 40.0, 100.0);
+INSERT INTO marks (
+    quiz1_marks,
+    quiz2_marks,
+    quiz3_marks,
+    final_theory,
+    final_practical,
+    final_marks
+) VALUES (
+    14.0,
+    16.5,
+    18.0,
+    45.0,
+    40.0,
+    90.0
+);
+
 ```
 
 ---
