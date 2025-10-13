@@ -4,13 +4,13 @@ TG/2023/1736
 
 CREATE TABLE attendance (
     attendance_id INT PRIMARY KEY,
-    user_id INT,
+    user_id VARCHAR(10),
     course_id VARCHAR(10),
     date DATE,
     status ENUM('Present', 'Absent'),
     medical BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (course_id) REFERENCES users(course_id)
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
 );
 
 
@@ -50,14 +50,13 @@ DELIMITER ;
 
 CREATE TABLE marks (
     marks_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    course_id VARCHAR(10),
-    quiz_marks DECIMAL(5,2),
+    quiz1_marks DECIMAL(5,2),
+    quiz2_marks DECIMAL(5,2),
+    quiz3_marks DECIMAL(5,2),
     final_theory DECIMAL(5,2),
     final_practical DECIMAL(5,2),
     final_marks DECIMAL(5,2),
-    grade CHAR(2),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    
 );
 
 
@@ -94,12 +93,9 @@ DELIMITER ;
 CREATE TABLE result (
     result_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    marks_id INT,
     gpa DECIMAL(3,2),
     sgpa DECIMAL(3,2),
-    eligible ENUM('Yes', 'No'),
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (marks_id) REFERENCES marks(marks_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id), 
 );
 
 

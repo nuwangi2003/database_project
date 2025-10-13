@@ -1,4 +1,4 @@
-1) CREATE table for student
+1. CREATE table for student
 
 CREATE TABLE student(
     user_id CHAR(3) PRIMARY KEY,
@@ -8,18 +8,19 @@ CREATE TABLE student(
 
 
 
-2) CREATE table for tech_officer
+2. CREATE table for lecture
 
-CREATE TABLE tech_officer(
-    user_id CHAR(3) NOT NULL,
-    phone_number char(10)
-
+CREATE TABLE lecture(
+    lecture_id VARCHAR(10) NOT NULL,
+    specilization VARCHAR(20),
+    PRIMARY KEY(lecture_id),
+    FORIEGN KEY (lecture_id) REFERENCES user(user_id)
 );
 
-3)CREATE table for student course
+3. CREATE table for student course
 
-CREATE TABLE student_course(
-    course_id CHAR(3) NOT NULL,
-    user_id CHAR(3) NOT NULL
-);
+    CREATE TABLE student_course(
+        course_id VARCHAR(10) NOT NULL,
+        user_id CHAR() NOT NULL
+    );
 
