@@ -1,0 +1,151 @@
+USE db_project;
+
+-- 1. Users (Admin, Dean, Lecturers, Technical Officers, Students)
+INSERT INTO users (user_id, email, password, department) VALUES
+('U001', 'admin@ict.lk', 'admin123', 'ICT'),
+('U002', 'dean@ict.lk', 'dean123', 'ICT'),
+('U003', 'lec01@ict.lk', 'pass123', 'ICT'),
+('U004', 'lec02@ict.lk', 'pass123', 'ICT'),
+('U005', 'lec03@ict.lk', 'pass123', 'ICT'),
+('U006', 'lec04@ict.lk', 'pass123', 'ICT'),
+('U007', 'lec05@ict.lk', 'pass123', 'ICT'),
+('U008', 'to01@ict.lk', 'to123', 'ICT'),
+('U009', 'to02@ict.lk', 'to123', 'ICT'),
+('U010', 'to03@ict.lk', 'to123', 'ICT'),
+('U011', 'to04@ict.lk', 'to123', 'ICT'),
+('U012', 'to05@ict.lk', 'to123', 'ICT'),
+('U013', 'st001@ict.lk', 'stu123', 'ICT'),
+('U014', 'st002@ict.lk', 'stu123', 'ICT'),
+('U015', 'st003@ict.lk', 'stu123', 'ICT'),
+('U016', 'st004@ict.lk', 'stu123', 'ICT'),
+('U017', 'st005@ict.lk', 'stu123', 'ICT'),
+('U018', 'st006@ict.lk', 'stu123', 'ICT'),
+('U019', 'st007@ict.lk', 'stu123', 'ICT'),
+('U020', 'st008@ict.lk', 'stu123', 'ICT'),
+('U021', 'st009@ict.lk', 'stu123', 'ICT'),
+('U022', 'st010@ict.lk', 'stu123', 'ICT'),
+('U023', 'st011@ict.lk', 'stu123', 'ICT'),
+('U024', 'st012@ict.lk', 'stu123', 'ICT'),
+('U025', 'st013@ict.lk', 'stu123', 'ICT'),
+('U026', 'st014@ict.lk', 'stu123', 'ICT'),
+('U027', 'st015@ict.lk', 'stu123', 'ICT');
+
+-- 2. Student table (10 proper, 5 repeat)
+INSERT INTO student (user_id, reg_no, status) VALUES
+('U013', 'TG001', 'Proper'),
+('U014', 'TG002', 'Proper'),
+('U015', 'TG003', 'Proper'),
+('U016', 'TG004', 'Proper'),
+('U017', 'TG005', 'Proper'),
+('U018', 'TG006', 'Proper'),
+('U019', 'TG007', 'Proper'),
+('U020', 'TG008', 'Proper'),
+('U021', 'TG009', 'Proper'),
+('U022', 'TG010', 'Proper'),
+('U023', 'TG011', 'Repeat'),
+('U024', 'TG012', 'Repeat'),
+('U025', 'TG013', 'Repeat'),
+('U026', 'TG014', 'Repeat'),
+('U027', 'TG015', 'Repeat');
+
+
+-- 3. Technical Officers
+INSERT INTO tech_officer (user_id) VALUES
+('U008'), ('U009'), ('U010'), ('U011'), ('U012');
+
+-- 4. Lecturers
+INSERT INTO lecture (user_id, specialization) VALUES
+('U003', 'DBMS'),
+('U004', 'Web Dev'),
+('U005', 'Programming'),
+('U006', 'Networking'),
+('U007', 'Mathematics');
+
+-- 5. Dean
+INSERT INTO dean (lecture_id, term_start, term_end) VALUES
+('U003', '2024-01-01', '2025-12-31');
+
+-- 6. Courses
+INSERT INTO course (course_id, name, credit) VALUES
+('C001', 'Database Systems', 3),
+('C002', 'Web Development', 3),
+('C003', 'Programming Fundamentals', 4),
+('C004', 'Computer Networks', 3),
+('C005', 'Mathematics for Computing', 2);
+
+-- 7. Marks
+INSERT INTO marks (quiz1_marks, quiz2_marks, quiz3_marks, final_theory, final_practical, final_marks) VALUES
+(80, 75, 78, 85, 82, 82),
+(60, 65, 70, 72, 74, 70),
+(90, 85, 88, 91, 89, 89),
+(55, 50, 60, 58, 65, 58),
+(75, 70, 74, 80, 78, 77),
+(45, 55, 50, 60, 62, 55),
+(68, 70, 72, 75, 73, 72),
+(92, 90, 94, 96, 95, 94),
+(85, 87, 83, 89, 88, 86),
+(50, 60, 55, 65, 67, 60);
+
+-- 8. Course–Marks Relationship
+INSERT INTO course_marks (course_id, marks_id) VALUES
+('C001', 1), ('C002', 2), ('C003', 3), ('C004', 4), ('C005', 5);
+
+-- 9. Student–Marks Relationship
+INSERT INTO student_marks (user_id, marks_id, grade) VALUES
+('U013', 1, 'A'),
+('U014', 2, 'B'),
+('U015', 3, 'A'),
+('U016', 4, 'C'),
+('U017', 5, 'B'),
+('U018', 6, 'C'),
+('U019', 7, 'B'),
+('U020', 8, 'A'),
+('U021', 9, 'A'),
+('U022', 10, 'C');
+
+-- 10. Student–Course Mapping
+INSERT INTO student_course (user_id, course_id) VALUES
+('U013', 'C001'), ('U013', 'C002'), ('U013', 'C003'),
+('U014', 'C001'), ('U014', 'C004'),
+('U015', 'C002'), ('U015', 'C003'),
+('U016', 'C001'), ('U016', 'C005'),
+('U017', 'C002'), ('U017', 'C004'),
+('U018', 'C003'), ('U018', 'C004'),
+('U019', 'C001'), ('U019', 'C002'),
+('U020', 'C003'), ('U020', 'C005'),
+('U021', 'C001'), ('U021', 'C003'),
+('U022', 'C002'), ('U022', 'C004');
+
+-- 11. Attendance (few samples for mix of present/absent/medical)
+INSERT INTO attendance (attendance_id, user_id, course_id, date, status, medical) VALUES
+(1, 'U013', 'C001', '2025-02-01', 'Present', FALSE),
+(2, 'U013', 'C001', '2025-02-08', 'Absent', TRUE),
+(3, 'U014', 'C002', '2025-02-01', 'Present', FALSE),
+(4, 'U015', 'C003', '2025-02-01', 'Present', FALSE),
+(5, 'U016', 'C004', '2025-02-02', 'Absent', FALSE),
+(6, 'U017', 'C002', '2025-02-01', 'Present', FALSE),
+(7, 'U018', 'C003', '2025-02-01', 'Present', FALSE),
+(8, 'U019', 'C001', '2025-02-01', 'Absent', FALSE),
+(9, 'U020', 'C005', '2025-02-02', 'Present', FALSE),
+(10, 'U021', 'C001', '2025-02-01', 'Present', FALSE);
+
+-- 12. Results
+INSERT INTO result (user_id, gpa, sgpa) VALUES
+('U013', 3.85, 3.80),
+('U014', 3.20, 3.10),
+('U015', 3.90, 3.85),
+('U016', 2.50, 2.60),
+('U017', 3.10, 3.20),
+('U018', 2.80, 2.70),
+('U019', 3.30, 3.25),
+('U020', 3.95, 3.90),
+('U021', 3.80, 3.75),
+('U022', 2.60, 2.55);
+
+-- 13. Technical Officer phone numbers
+INSERT INTO tech_office_phone_no (user_id, phone_number) VALUES
+('U008', '0711111111'),
+('U009', '0712222222'),
+('U010', '0713333333'),
+('U011', '0714444444'),
+('U012', '0715555555');
