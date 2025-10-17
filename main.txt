@@ -17,7 +17,7 @@ CREATE TABLE student (
     user_id VARCHAR(10) PRIMARY KEY,
     reg_no VARCHAR(15) UNIQUE NOT NULL,
     batch VARCHAR(10),
-    status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper'
+    status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper',
     FOREIGN KEY (user_id) REFERENCES users(user_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -26,7 +26,7 @@ CREATE TABLE student (
 -- 4. Tech Officer Table
 CREATE TABLE tech_officer (
     user_id VARCHAR(10) PRIMARY KEY,
-    office_name VARCHAR(50),
+    -- office_name VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -82,7 +82,7 @@ CREATE TABLE course_marks (
     PRIMARY KEY (course_id, marks_id),
     FOREIGN KEY (course_id) REFERENCES course(course_id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        ON UPDATE CASCADE
     FOREIGN KEY (marks_id) REFERENCES marks(marks_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
