@@ -12,13 +12,7 @@ CREATE TABLE users (
     role ENUM('Admin', 'Dean', 'Lecturer', 'Tech_Officer', 'Student') NOT NULL
 );
 
--- 3. Department Table
-CREATE TABLE department (
-    dept_id INT AUTO_INCREMENT PRIMARY KEY,
-    dept_name VARCHAR(50) UNIQUE NOT NULL
-);
-
--- 4. Student Table
+-- 3. Student Table
 CREATE TABLE student (
     user_id VARCHAR(10) PRIMARY KEY,
     reg_no VARCHAR(15) UNIQUE NOT NULL,
@@ -29,7 +23,7 @@ CREATE TABLE student (
         ON UPDATE CASCADE
 );
 
--- 5. Tech Officer Table
+-- 4. Tech Officer Table
 CREATE TABLE tech_officer (
     user_id VARCHAR(10) PRIMARY KEY,
     office_name VARCHAR(50),
@@ -38,7 +32,7 @@ CREATE TABLE tech_officer (
         ON UPDATE CASCADE
 );
 
--- 6. Lecturer Table
+-- 5. Lecturer Table
 CREATE TABLE lecture (
     user_id VARCHAR(10) PRIMARY KEY,
     specialization VARCHAR(50),
@@ -48,7 +42,7 @@ CREATE TABLE lecture (
         ON UPDATE CASCADE
 );
 
--- 7. Dean Table
+-- 6. Dean Table
 CREATE TABLE dean (
     lecture_id VARCHAR(10) PRIMARY KEY,
     term_start DATE NOT NULL,
@@ -58,7 +52,7 @@ CREATE TABLE dean (
         ON UPDATE CASCADE
 );
 
--- 8. Course Table
+-- 7. Course Table
 CREATE TABLE course (
     course_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
@@ -68,7 +62,7 @@ CREATE TABLE course (
     weekly_hours DECIMAL(4,2) DEFAULT 3.00   -- hours per week
 );
 
--- 9. Marks Table
+-- 8. Marks Table
 CREATE TABLE marks (
     marks_id INT AUTO_INCREMENT PRIMARY KEY,
     quiz1_marks DECIMAL(5,2),
@@ -81,7 +75,7 @@ CREATE TABLE marks (
     final_marks DECIMAL(5,2)
 );
 
--- 10. Course-Marks Mapping
+-- 9. Course-Marks Mapping
 CREATE TABLE course_marks (
     course_id VARCHAR(10),
     marks_id INT,
@@ -94,7 +88,7 @@ CREATE TABLE course_marks (
         ON UPDATE CASCADE
 );
 
--- 11. Student-Marks Mapping
+-- 10. Student-Marks Mapping
 CREATE TABLE student_marks (
     user_id VARCHAR(10),
     marks_id INT,
@@ -108,7 +102,7 @@ CREATE TABLE student_marks (
         ON UPDATE CASCADE
 );
 
--- 12. Session Table (each lecture/practical session)
+-- 11. Session Table (each lecture/practical session)
 CREATE TABLE session (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     course_id VARCHAR(10) NOT NULL,
@@ -120,7 +114,7 @@ CREATE TABLE session (
         ON UPDATE CASCADE
 );
 
--- 13. Attendance Table
+-- 12. Attendance Table
 CREATE TABLE attendance (
     attendance_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
@@ -137,7 +131,7 @@ CREATE TABLE attendance (
 );
 
 
--- 15. Student-Course Mapping
+-- 13. Student-Course Mapping
 CREATE TABLE student_course (
     student_id VARCHAR(10),
     course_id VARCHAR(10),
@@ -150,7 +144,7 @@ CREATE TABLE student_course (
         ON UPDATE CASCADE
 );
 
--- 16. Lecture-Course Mapping
+-- 14. Lecture-Course Mapping
 CREATE TABLE lecture_course (
     lecture_id VARCHAR(10),
     course_id VARCHAR(10),
@@ -163,7 +157,7 @@ CREATE TABLE lecture_course (
         ON UPDATE CASCADE
 );
 
--- 17. Tech Officer Phone Numbers
+-- 15. Tech Officer Phone Numbers
 CREATE TABLE tech_officer_phone_no (
     user_id VARCHAR(10),
     phone_number VARCHAR(15),
@@ -173,7 +167,7 @@ CREATE TABLE tech_officer_phone_no (
         ON UPDATE CASCADE
 );
 
--- 18. Result Table
+-- 16. Result Table
 CREATE TABLE result (
     result_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
