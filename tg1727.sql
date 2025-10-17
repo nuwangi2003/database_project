@@ -1,4 +1,4 @@
-				// tech_officer
+				--tech_officer
 
 CREATE TABLE tech_officer(
 	user_id INT PRIMARY KEY,
@@ -7,7 +7,7 @@ CREATE TABLE tech_officer(
 	
 );
 
-				// dean
+				--dean
 CREATE TABLE dean(
 	lecture_id INT PRIMARY KEY,
 	term_start DATE,
@@ -16,7 +16,7 @@ CREATE TABLE dean(
 	
 );
 
-				// cource
+				--cource
 CREATE TABLE cource(
 	course_id INT PRIMARY KEY,
 	name VARCHAR(25),
