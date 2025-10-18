@@ -222,7 +222,7 @@ BEGIN
                     WHEN ca_eligible = 'Not Eligible' AND final_eligible = 'Not Eligible' THEN 'ECA & ESA'
                     WHEN ca_eligible = 'Not Eligible' THEN 'ECA'
                     WHEN final_eligible = 'Not Eligible' THEN 'ESA'
-                    WHEN final_marks < 40 THEN 'E'
+                    WHEN final_marks < 35 THEN 'E'
                     WHEN final_marks >= 85 THEN 'A+'
                     WHEN final_marks >= 75 THEN 'A'
                     WHEN final_marks >= 70 THEN 'A-'
@@ -232,6 +232,7 @@ BEGIN
                     WHEN final_marks >= 50 THEN 'C+'
                     WHEN final_marks >= 45 THEN 'C'
                     WHEN final_marks >= 40 THEN 'C-'
+                    WHEN final_marks >= 35 THEN 'D'
                     ELSE 'E'
                 END
                 WHERE student_id = s_id;

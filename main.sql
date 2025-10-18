@@ -1,4 +1,4 @@
-d-- 1. Create Database
+-- 1. Create Database
 CREATE DATABASE IF NOT EXISTS db_project;
 USE db_project;
 
@@ -147,9 +147,8 @@ CREATE TABLE result (
     student_id VARCHAR(10) NOT NULL,
     academic_year INT CHECK (academic_year BETWEEN 1 AND 4),
     semester ENUM('1','2') NOT NULL,
-    gpa DECIMAL(3,2),
-    sgpa DECIMAL(3,2),
-    cgpa DECIMAL(3,2),
+    sgpa DECIMAL(3,2) ,
+    cgpa DECIMAL(3,2) ,
     total_credits INT DEFAULT 0,
     FOREIGN KEY (student_id) REFERENCES student(user_id)
         ON DELETE CASCADE

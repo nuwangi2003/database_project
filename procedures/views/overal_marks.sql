@@ -16,6 +16,7 @@ SELECT
                 WHEN m.grade = 'C+' THEN 2.3
                 WHEN m.grade = 'C'  THEN 2
                 WHEN m.grade = 'C-' THEN 1.7
+                WHEN m.grade = 'D' THEN 1.3
                 ELSE 0   -- Fails: 'E', 'ECA & ESA'
             END * c.credit
         ) / SUM(c.credit), 2
@@ -31,6 +32,7 @@ SELECT
                 WHEN m.grade = 'C+' THEN 2.3
                 WHEN m.grade = 'C'  THEN 2
                 WHEN m.grade = 'C-' THEN 1.7
+                WHEN m.grade = 'D' THEN 1.3
                 ELSE 0
             END * c.credit
         ) / SUM(c.credit) OVER (PARTITION BY s.user_id), 2
