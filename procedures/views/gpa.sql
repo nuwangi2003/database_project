@@ -8,14 +8,18 @@ SELECT
     ROUND(
         SUM(
             CASE 
-                WHEN m.grade = 'A+' THEN 4
-                WHEN m.grade = 'A'  THEN 4
+                -- A+ to C- normal grades
+                WHEN m.grade = 'A+' THEN 4.0
+                WHEN m.grade = 'A'  THEN 4.0
                 WHEN m.grade = 'A-' THEN 3.7
                 WHEN m.grade = 'B+' THEN 3.3
-                WHEN m.grade = 'B'  THEN 3
+                WHEN m.grade = 'B'  THEN 3.0
                 WHEN m.grade = 'B-' THEN 2.7
                 WHEN m.grade = 'C+' THEN 2.3
-                WHEN m.grade = 'C'  THEN 2
+                WHEN m.grade = 'C'  THEN 2.0
+                WHEN m.grade = 'C-' THEN 1.7
+                -- Failing courses (E, ECA & ESA)
+                WHEN m.grade = 'E' OR m.grade = 'ECA & ESA' THEN 0
                 ELSE 0
             END * c.credit
         ) / SUM(c.credit), 2
@@ -23,17 +27,20 @@ SELECT
     ROUND(
         SUM(
             CASE 
-                WHEN m.grade = 'A+' THEN 4
-                WHEN m.grade = 'A'  THEN 4
+                WHEN m.grade = 'A+' THEN 4.0
+                WHEN m.grade = 'A'  THEN 4.0
                 WHEN m.grade = 'A-' THEN 3.7
                 WHEN m.grade = 'B+' THEN 3.3
-                WHEN m.grade = 'B'  THEN 3
+                WHEN m.grade = 'B'  THEN 3.0
                 WHEN m.grade = 'B-' THEN 2.7
                 WHEN m.grade = 'C+' THEN 2.3
-                WHEN m.grade = 'C'  THEN 2
+                WHEN m.grade = 'C'  THEN 2.0
+                WHEN m.grade = 'C-' THEN 1.7
+                WHEN m.grade = 'E' OR m.grade = 'ECA & ESA' THEN 0
                 ELSE 0
             END * c.credit
-        ) OVER (PARTITION BY s.user_id) / SUM(c.credit) OVER (PARTITION BY s.user_id), 2
+        ) OVER (PARTITION BY s.user_id) / 
+        SUM(c.credit) OVER (PARTITION BY s.user_id), 2
     ) AS cgpa
 FROM marks m
 JOIN student s ON s.user_id = m.student_id
