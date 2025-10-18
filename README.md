@@ -125,15 +125,6 @@ INSERT INTO marks (
 );
 ```
 
-### Step 4: Execute Calculation Views/Procedures (Optional)
-Create stored procedures or views to automate:
-- CA calculation
-- Grade assignment
-- Attendance eligibility
-- GPA and CGPA computation
-
-### Step 5: View Results
-Use SQL queries or MySQL Workbench EER diagrams to visualize relationships and results.
 
 ## 📚 EER Model Summary
 - Normalized to **Third Normal Form (3NF)**
