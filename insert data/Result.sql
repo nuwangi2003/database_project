@@ -1,12 +1,17 @@
-INSERT INTO result (user_id, gpa, sgpa) VALUES
-('U013', 3.85, 3.80),
-('U014', 3.20, 3.10),
-('U015', 3.90, 3.85),
-('U016', 2.50, 2.60),
-('U017', 3.10, 3.20),
-('U018', 2.80, 2.70),
-('U019', 3.30, 3.25),
-('U020', 3.95, 3.90),
-('U021', 3.80, 3.75),
-('U022', 2.60, 2.55);
+INSERT INTO result (student_id, academic_year, semester, sgpa, cgpa, total_credits) VALUES
 
+('U013',1,'2',NULL,NULL,0),
+('U014',1,'2',NULL,NULL,0),
+('U015',1,'2',NULL,NULL,0),
+('U016',1,'2',NULL,NULL,0),
+('U017',1,'2',NULL,NULL,0),
+('U018',1,'2',NULL,NULL,0),
+('U019',1,'2',NULL,NULL,0),
+('U020',1,'2',NULL,NULL,0),
+('U021',1,'2',NULL,NULL,0),
+('U022',1,'2',NULL,NULL,0),
+('U023',1,'2',NULL,NULL,0),
+('U024',1,'2',NULL,NULL,0),
+('U025',1,'2',NULL,NULL,0),
+('U026',1,'2',NULL,NULL,0),
+('U027',1,'2',NULL,NULL,0);

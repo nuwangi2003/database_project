@@ -1,17 +1,17 @@
-INSERT INTO student (user_id, reg_no, status) VALUES
-('U013', 'TG001', 'Proper'),
-('U014', 'TG002', 'Proper'),
-('U015', 'TG003', 'Proper'),
-('U016', 'TG004', 'Proper'),
-('U017', 'TG005', 'Proper'),
-('U018', 'TG006', 'Proper'),
-('U019', 'TG007', 'Proper'),
-('U020', 'TG008', 'Proper'),
-('U021', 'TG009', 'Proper'),
-('U022', 'TG010', 'Proper'),
-('U023', 'TG011', 'Repeat'),
-('U024', 'TG012', 'Repeat'),
-('U025', 'TG013', 'Repeat'),
-('U026', 'TG014', 'Repeat'),
-('U027', 'TG015', 'Repeat');
+INSERT INTO student (user_id, reg_no, batch, status, department_id) VALUES
 
+('U013','TG/2023/1701','2023','Proper','D001'),
+('U014','TG/2023/1702','2023','Proper','D001'),
+('U015','TG/2023/1703','2023','Proper','D001'),
+('U016','TG/2023/1704','2023','Proper','D001'),
+('U017','TG/2023/1705','2023','Proper','D001'),
+('U018','TG/2023/1706','2023','Proper','D001'),
+('U019','TG/2023/1707','2023','Proper','D001'),
+('U020','TG/2023/1708','2023','Proper','D001'),
+('U021','TG/2023/1709','2023','Proper','D001'),
+('U022','TG/2023/1710','2023','Proper','D001'),
+('U023','TG/2023/1711','2023','Repeat','D001'),
+('U024','TG/2023/1712','2023','Repeat','D001'),
+('U025','TG/2023/1713','2023','Repeat','D001'),
+('U026','TG/2023/1714','2023','Repeat','D001'),
+('U027','TG/2023/1715','2023','Suspended','D001');
