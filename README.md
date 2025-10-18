@@ -85,7 +85,7 @@ This database manages key university processes, supporting:
 | Mid Exam              | 80                   | 80 × 0.15 = 12               |
 | **CA Total (out of 40)** | —                   | 32                           |
 | Final Theory + Practical | (60 + 50)/2 = 55   | 55 × 0.6 = 33                |
-| **Final Total (out of 60)** | —                | 65                           |
+| **Final Total (out of 60)** | —                | 33                           |
 | **Total Marks**        | **CA + Final = 65** | **Grade = B+**            |
 
 ## 🧰 How to Use
