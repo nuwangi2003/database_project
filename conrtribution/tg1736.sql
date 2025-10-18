@@ -14,36 +14,8 @@ CREATE TABLE attendance (
 );
 
 
-CREATE VIEW v_attendance_summary AS
-SELECT 
-    s.reg_no,
-    c.course_id,
-    c.name AS course_name,
-    COUNT(a.status) AS total_classes,
-    SUM(a.status = 'Present') AS attended_classes,
-    ROUND((SUM(a.status = 'Present') / COUNT(a.status)) * 100, 2) AS attendance_percentage,
-    CASE 
-        WHEN (SUM(a.status = 'Present') / COUNT(a.status)) * 100 >= 80 THEN 'Eligible'
-        ELSE 'Not Eligible'
-    END AS eligibility
-FROM attendance a
-JOIN student s ON a.user_id = s.user_id
-JOIN course c ON a.course_id = c.course_id
-GROUP BY s.reg_no, c.course_id;
 
-DELIMITER //
-CREATE PROCEDURE sp_update_attendance(
-    IN p_user_id INT, 
-    IN p_course_id INT, 
-    IN p_date DATE, 
-    IN p_status VARCHAR(10), 
-    IN p_medical BOOLEAN
-)
-BEGIN
-    INSERT INTO attendance (user_id, course_id, date, status, medical)
-    VALUES (p_user_id, p_course_id, p_date, p_status, p_medical);
-END //
-DELIMITER ;
+
 
 
 //Marks Table
@@ -60,33 +32,6 @@ CREATE TABLE marks (
 );
 
 
-CREATE VIEW v_marks_summary AS
-SELECT 
-    s.reg_no,
-    c.course_id,
-    c.name AS course_name,
-    m.quiz_marks,
-    m.final_theory,
-    m.final_practical,
-    m.final_marks,
-    m.grade
-FROM marks m
-JOIN student s ON m.user_id = s.user_id
-JOIN course c ON m.course_id = c.course_id;
-
-
-DELIMITER //
-CREATE PROCEDURE sp_calculate_final_marks(
-    IN p_user_id INT, 
-    IN p_course_id INT
-)
-BEGIN
-    UPDATE marks
-    SET final_marks = (quiz_marks + final_theory + final_practical) / 3
-    WHERE user_id = p_user_id AND course_id = p_course_id;
-END //
-DELIMITER ;
-
 
 //Result Table
 
@@ -99,43 +44,5 @@ CREATE TABLE result (
 );
 
 
-CREATE VIEW v_result_summary AS
-SELECT 
-    s.reg_no,
-    r.gpa,
-    r.sgpa,
-    r.eligible,
-    c.name AS course_name,
-    m.final_marks,
-    m.grade
-FROM result r
-JOIN marks m ON r.marks_id = m.marks_id
-JOIN student s ON r.user_id = s.user_id
-JOIN course c ON m.course_id = c.course_id;
 
-
-
-DELIMITER //
-CREATE PROCEDURE sp_generate_result(IN p_user_id INT)
-BEGIN
-    DECLARE v_gpa DECIMAL(4,2);
-    DECLARE v_eligible VARCHAR(10);
-
-    -- Example GPA calculation logic
-    SELECT AVG(final_marks)/25 INTO v_gpa 
-    FROM marks WHERE user_id = p_user_id;
-
-    -- Check eligibility based on attendance + marks
-    SELECT 
-        CASE WHEN COUNT(*) = SUM(CASE WHEN eligibility = 'Eligible' THEN 1 END)
-        THEN 'Yes' ELSE 'No' END
-    INTO v_eligible
-    FROM v_attendance_summary WHERE reg_no = (
-        SELECT reg_no FROM student WHERE user_id = p_user_id
-    );
-
-    INSERT INTO result (user_id, gpa, eligible)
-    VALUES (p_user_id, v_gpa, v_eligible);
-END //
-DELIMITER ;
 
