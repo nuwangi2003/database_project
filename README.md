@@ -58,8 +58,8 @@ This database manages key university processes, supporting:
 
 ### Continuous Assessment (CA) (40% of total)
 - **Best two quizzes**: Average of top 2 quiz marks × 0.1
-- **Assessment marks**: (0–100) × 1.5
-- **Mid exam**: (0–100) × 1.5
+- **Assessment marks**: (0–100) × 0.15
+- **Mid exam**: (0–100) × 0.15
 - **Total CA weight**: Scaled to 40 marks
 
 ### Final Exam (60% of total)
@@ -84,10 +84,11 @@ This database manages key university processes, supporting:
 | Assessment            | 85                   | 85 × 0.15 = 12.75             |
 | Mid Exam              | 80                   | 80 × 0.15 = 12               |
 | **CA Total (out of 40)** | —                   | 32                           |
-| Final Theory + Practical | (60 + 50)/2 = 55   | 55 × 0.6 = 33                |
+| Final Theory + Practical | (0 + 60) = 55   | 55 × 0.6 = 33                |
 | **Final Total (out of 60)** | —                | 33                           |
 | **Total Marks**        | **CA + Final = 65** | **Grade = B+**            |
-
+#### in that case that subeject is either practicum or theory that's why one part become 0
+#### if there is both then maximum marks theory and practical should be 50 then can get accurate answer
 ## 🧰 How to Use
 
 ### Step 1: Create Database
@@ -125,7 +126,6 @@ INSERT INTO marks (
 );
 ```
 
-
 ## 📚 EER Model Summary
 - Normalized to **Third Normal Form (3NF)**
 - Uses **Primary & Foreign Keys** for relationships
@@ -144,8 +144,8 @@ By building this project, you will learn:
 
 ## 🧩 Technologies Used
 - **Database**: MySQL
-- **Tools**: MySQL Workbench, phpMyAdmin, dbdiagram.io
-- **Language**: SQL
+- **Tools**: MySQL Workbench, phpMyAdmin, draw.io
+- **Language**: MYYSQL
 
 ## 🚀 Getting Started
 1. Clone or download the project repository.
