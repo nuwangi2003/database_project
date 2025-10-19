@@ -1,6 +1,7 @@
-INSERT INTO lecture (user_id, specialization) VALUES
-('U003', 'DBMS'),
-('U004', 'Web Dev'),
-('U005', 'Programming'),
-('U006', 'Networking'),
-('U007', 'Mathematics');
+INSERT INTO lecture (user_id, specialization, designation) VALUES
+
+('U003','Database Systems','Senior Lecturer'),
+('U004','Web Development','Lecturer'),
+('U005','Computer Networks','Senior Lecturer'),
+('U006','Computer Architecture','Lecturer'),
+('U007','Discrete Mathematics','Lecturer');
