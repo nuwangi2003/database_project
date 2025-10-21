@@ -197,33 +197,50 @@ DELIMITER ;
 ------------------------
 -- 4. Calculate Results Procedure
 ------------------------
+
 DELIMITER $$
 
 CREATE PROCEDURE calculate_results()
 BEGIN
-    DECLARE done INT DEFAULT FALSE;
+    DECLARE done_student INT DEFAULT FALSE;
     DECLARE s_id VARCHAR(10);
-    DECLARE a_year INT;
-    DECLARE sem INT;
 
-    -- Cursor to go through all students
+    -- Outer cursor: all students
     DECLARE student_cursor CURSOR FOR SELECT user_id FROM student;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done_student = TRUE;
 
     OPEN student_cursor;
 
-    read_loop: LOOP
+    student_loop: LOOP
         FETCH student_cursor INTO s_id;
-        IF done THEN
-            LEAVE read_loop;
+        IF done_student THEN
+            LEAVE student_loop;
         END IF;
 
-        SET a_year = 1;
-        year_loop: WHILE a_year <= 4 DO
-            SET sem = 1;
-            sem_loop: WHILE sem <= 2 DO
+        -- Inner block for per-student semester cursor (so DECLAREs are at block start)
+        BEGIN
+            DECLARE done_sem INT DEFAULT FALSE;
+            DECLARE a_year INT;
+            DECLARE sem VARCHAR(4);
 
-                -- Update grades based on final_marks and eligibility
+            DECLARE sem_cursor CURSOR FOR
+                SELECT DISTINCT c.academic_year, c.semester
+                FROM marks m
+                JOIN course c ON c.course_id = m.course_id
+                WHERE m.student_id = s_id
+                ORDER BY c.academic_year, c.semester;
+
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done_sem = TRUE;
+
+            SET done_sem = FALSE;
+            OPEN sem_cursor;
+
+            sem_loop: LOOP
+                FETCH sem_cursor INTO a_year, sem;
+                IF done_sem THEN
+                    LEAVE sem_loop;
+                END IF;
+
                 UPDATE marks
                 SET grade = CASE
                     WHEN ca_eligible = 'Not Eligible' AND final_eligible = 'Not Eligible' THEN 'ECA & ESA'
@@ -244,67 +261,71 @@ BEGIN
                 END
                 WHERE student_id = s_id;
 
-                -- Calculate total credit points
-                SET @total_credit_points := 0;
-                SET @total_credits := 0;
+                SET @total_credit_points = 0;
+                SET @total_credits = 0;
 
-                SELECT SUM(c.credit *
-                    CASE m.grade
-                        WHEN 'A+' THEN 4.0
-                        WHEN 'A'  THEN 4.0
-                        WHEN 'A-' THEN 3.7
-                        WHEN 'B+' THEN 3.3
-                        WHEN 'B'  THEN 3.0
-                        WHEN 'B-' THEN 2.7
-                        WHEN 'C+' THEN 2.3
-                        WHEN 'C'  THEN 2.0
-                        WHEN 'C-' THEN 1.7
-                        WHEN 'D'  THEN 1.3
-                        ELSE 0
-                    END
-                ) INTO @total_credit_points
+                SELECT 
+                    IFNULL(SUM(c.credit *
+                        CASE m.grade
+                            WHEN 'A+' THEN 4.0
+                            WHEN 'A'  THEN 4.0
+                            WHEN 'A-' THEN 3.7
+                            WHEN 'B+' THEN 3.3
+                            WHEN 'B'  THEN 3.0
+                            WHEN 'B-' THEN 2.7
+                            WHEN 'C+' THEN 2.3
+                            WHEN 'C'  THEN 2.0
+                            WHEN 'C-' THEN 1.7
+                            WHEN 'D'  THEN 1.3
+                            ELSE 0
+                        END
+                    ), 0),
+                    IFNULL(SUM(c.credit), 0)
+                INTO @total_credit_points, @total_credits
                 FROM marks m
                 JOIN course c ON m.course_id = c.course_id
                 WHERE m.student_id = s_id
                   AND c.academic_year = a_year
                   AND c.semester = sem;
 
-                SELECT SUM(c.credit) INTO @total_credits
-                FROM marks m
-                JOIN course c ON m.course_id = c.course_id
-                WHERE m.student_id = s_id
-                  AND c.academic_year = a_year
-                  AND c.semester = sem;
+                IF @total_credits > 0 THEN
+                    INSERT INTO result(student_id, academic_year, semester, sgpa, total_credits)
+                    VALUES (s_id, a_year, sem, ROUND(@total_credit_points / @total_credits, 2), @total_credits)
+                    ON DUPLICATE KEY UPDATE
+                        sgpa = ROUND(@total_credit_points / @total_credits, 2),
+                        total_credits = @total_credits;
+                END IF;
 
-                -- Insert or update result for this semester
-                INSERT INTO result(student_id, academic_year, semester, sgpa, total_credits)
-                VALUES (s_id, a_year, sem, IF(@total_credits=0,0,@total_credit_points/@total_credits), @total_credits)
-                ON DUPLICATE KEY UPDATE
-                    sgpa = IF(@total_credits=0,0,@total_credit_points/@total_credits),
-                    total_credits = @total_credits;
+            END LOOP sem_loop;
 
-                SET sem = sem + 1;
-            END WHILE;
+            CLOSE sem_cursor;
+        END; -- inner block
 
-            SET a_year = a_year + 1;
-        END WHILE;
-
-    END LOOP;
+    END LOOP student_loop;
 
     CLOSE student_cursor;
 
-    -- Calculate CGPA dynamically for all students
     UPDATE result r
     JOIN (
-        SELECT student_id, SUM(sgpa*total_credits)/SUM(total_credits) AS cgpa_calc
+        SELECT student_id,
+               SUM(sgpa * total_credits) / NULLIF(SUM(total_credits),0) AS cgpa_calc
         FROM result
         GROUP BY student_id
     ) t ON r.student_id = t.student_id
-    SET r.cgpa = t.cgpa_calc;
+    SET r.cgpa = ROUND(t.cgpa_calc, 2)
+    WHERE t.cgpa_calc IS NOT NULL;
 
 END$$
 
 DELIMITER ;
+
+
+
+
+
+
+
+
 
 
 

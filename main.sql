@@ -116,7 +116,7 @@ CREATE TABLE marks (
     final_marks DECIMAL(5,2),                                                     -- total marks including CA + final exams
     ca_eligible ENUM('Eligible','Not Eligible','MC','WH') DEFAULT 'Not Eligible',
     final_eligible ENUM('Eligible','Not Eligible','MC','WH','E*') DEFAULT 'Not Eligible',
-    grade CHAR(2),
+    grade CHAR(10),
     FOREIGN KEY (student_id) REFERENCES student(user_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
