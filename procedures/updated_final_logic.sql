@@ -11,22 +11,23 @@ BEGIN
     DECLARE sessionHours DECIMAL(4,2);
     DECLARE student_status ENUM('Proper','Repeat','Suspended');
 
-    SELECT session_hours INTO sessionHours
-    FROM session
-    WHERE session_id = NEW.session_id;
+    -- Get session hours and student status
+    SELECT s.session_hours, st.status 
+    INTO sessionHours, student_status
+    FROM session s
+    JOIN student st ON st.user_id = NEW.student_id
+    WHERE s.session_id = NEW.session_id;
 
-    SELECT status INTO student_status 
-    FROM student 
-    WHERE user_id = NEW.student_id;
-
+    -- Default hours
     SET NEW.hours_attended = 0;
 
     IF student_status != 'Suspended' THEN
         IF NEW.status = 'Present' THEN
             SET NEW.hours_attended = sessionHours;
         ELSEIF NEW.status = 'Absent' THEN
+            -- Approved medical attendance
             IF EXISTS (
-                SELECT 1 
+                SELECT 1
                 FROM medical m
                 JOIN session s ON s.session_id = NEW.session_id
                 WHERE m.student_id = NEW.student_id
@@ -40,9 +41,6 @@ BEGIN
         END IF;
     END IF;
 END$$
-DELIMITER ;
-
-DELIMITER $$
 
 -- UPDATE Trigger
 CREATE TRIGGER trg_attendance_before_update
@@ -52,13 +50,11 @@ BEGIN
     DECLARE sessionHours DECIMAL(4,2);
     DECLARE student_status ENUM('Proper','Repeat','Suspended');
 
-    SELECT session_hours INTO sessionHours
-    FROM session
-    WHERE session_id = NEW.session_id;
-
-    SELECT status INTO student_status 
-    FROM student 
-    WHERE user_id = NEW.student_id;
+    SELECT s.session_hours, st.status 
+    INTO sessionHours, student_status
+    FROM session s
+    JOIN student st ON st.user_id = NEW.student_id
+    WHERE s.session_id = NEW.session_id;
 
     SET NEW.hours_attended = 0;
 
@@ -67,7 +63,7 @@ BEGIN
             SET NEW.hours_attended = sessionHours;
         ELSEIF NEW.status = 'Absent' THEN
             IF EXISTS (
-                SELECT 1 
+                SELECT 1
                 FROM medical m
                 JOIN session s ON s.session_id = NEW.session_id
                 WHERE m.student_id = NEW.student_id
@@ -99,18 +95,17 @@ BEGIN
     DECLARE assessment_contrib DECIMAL(5,2);
     DECLARE mid_contrib DECIMAL(5,2);
 
-    -- Get best two quiz total
+    -- Best two quizzes
     SET best_two_sum = NEW.quiz1_marks + NEW.quiz2_marks + NEW.quiz3_marks
                      - LEAST(NEW.quiz1_marks, NEW.quiz2_marks, NEW.quiz3_marks);
 
-    -- Calculate quiz contribution (0.1)
+    -- Quiz contribution (10%)
     SET quiz_avg = (best_two_sum / 2) * 0.1;
 
-    -- Assessment × 1.5 and Mid × 1.5
-    SET assessment_contrib = NEW.assessment_marks * 1.5;
-    SET mid_contrib = NEW.mid_marks * 1.5;
+    -- Assessment and mid
+    SET assessment_contrib = NEW.assessment_marks * 0.15;
+    SET mid_contrib = NEW.mid_marks * 0.15;
 
-    -- Total CA marks (out of 40)
     SET NEW.ca_marks = ROUND(quiz_avg + assessment_contrib + mid_contrib, 2);
 END$$
 
@@ -128,22 +123,32 @@ FOR EACH ROW
 BEGIN
     DECLARE student_status ENUM('Proper','Repeat','Suspended');
     DECLARE attendance_pct DECIMAL(5,2) DEFAULT 0;
-    DECLARE ca_med INT DEFAULT 0;
+    DECLARE mid_med INT DEFAULT 0;
     DECLARE final_med INT DEFAULT 0;
     DECLARE final_total DECIMAL(5,2);
 
-    SELECT status, attendance_percentage 
-    INTO student_status, attendance_pct
+    -- Fetch student status
+    SELECT status 
+    INTO student_status
     FROM student 
     WHERE user_id = NEW.student_id;
 
-    SELECT COUNT(*) INTO ca_med
+    -- Fetch dynamic attendance percentage from view
+    SELECT attendance_percentage
+    INTO attendance_pct
+    FROM student_attendance_summary
+    WHERE user_id = NEW.student_id
+      AND course_id = NEW.course_id;
+
+    -- Check medical for CA
+    SELECT COUNT(*) INTO mid_med
     FROM medical 
     WHERE student_id = NEW.student_id
       AND course_id = NEW.course_id
-      AND exam_type = 'CA'
+      AND exam_type = 'Mid'
       AND status = 'Approved';
 
+    -- Check medical for Final
     SELECT COUNT(*) INTO final_med
     FROM medical 
     WHERE student_id = NEW.student_id
@@ -155,9 +160,9 @@ BEGIN
     IF student_status = 'Suspended' THEN
         SET NEW.ca_eligible = 'WH';
     ELSEIF (NEW.quiz1_marks IS NULL OR NEW.quiz2_marks IS NULL OR NEW.quiz3_marks IS NULL
-            OR NEW.assessment_marks IS NULL OR NEW.mid_marks IS NULL) AND ca_med = 0 THEN
+            OR NEW.assessment_marks IS NULL OR NEW.mid_marks IS NULL) AND mid_med = 0 THEN
         SET NEW.ca_eligible = 'Not Eligible';
-    ELSEIF ca_med > 0 THEN
+    ELSEIF mid_med > 0 THEN
         SET NEW.ca_eligible = 'MC';
     ELSE
         SET NEW.ca_eligible = 'Eligible';
@@ -177,9 +182,9 @@ BEGIN
     END IF;
 
     -- Final marks = (final_theory + final_practical) × 0.6
-    SET final_total = (IFNULL(NEW.final_theory, 0) + IFNULL(NEW.final_practical, 0)) * 0.6;
+    SET final_total = (IFNULL(NEW.final_theory,0) + IFNULL(NEW.final_practical,0)) * 0.6;
 
-    -- Combine CA (×0.4 weight already inside CA calc) + Final (×0.6)
+    -- Combine CA + Final
     IF NEW.ca_eligible IN ('Eligible','MC') AND NEW.final_eligible IN ('Eligible','MC') THEN
         SET NEW.final_marks = ROUND(NEW.ca_marks + final_total, 2);
     ELSE
@@ -188,7 +193,6 @@ BEGIN
 END$$
 
 DELIMITER ;
-
 
 ------------------------
 -- 4. Calculate Results Procedure
@@ -200,8 +204,9 @@ BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE s_id VARCHAR(10);
     DECLARE a_year INT;
-    DECLARE sem ENUM('1','2');
+    DECLARE sem INT;
 
+    -- Cursor to go through all students
     DECLARE student_cursor CURSOR FOR SELECT user_id FROM student;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -214,9 +219,11 @@ BEGIN
         END IF;
 
         SET a_year = 1;
-        WHILE a_year <= 4 DO
-            SET sem = '1';
-            WHILE sem <= '2' DO
+        year_loop: WHILE a_year <= 4 DO
+            SET sem = 1;
+            sem_loop: WHILE sem <= 2 DO
+
+                -- Update grades based on final_marks and eligibility
                 UPDATE marks
                 SET grade = CASE
                     WHEN ca_eligible = 'Not Eligible' AND final_eligible = 'Not Eligible' THEN 'ECA & ESA'
@@ -237,6 +244,7 @@ BEGIN
                 END
                 WHERE student_id = s_id;
 
+                -- Calculate total credit points
                 SET @total_credit_points := 0;
                 SET @total_credits := 0;
 
@@ -257,28 +265,35 @@ BEGIN
                 ) INTO @total_credit_points
                 FROM marks m
                 JOIN course c ON m.course_id = c.course_id
-                WHERE m.student_id = s_id AND c.academic_year = a_year AND c.semester = sem;
+                WHERE m.student_id = s_id
+                  AND c.academic_year = a_year
+                  AND c.semester = sem;
 
                 SELECT SUM(c.credit) INTO @total_credits
                 FROM marks m
                 JOIN course c ON m.course_id = c.course_id
-                WHERE m.student_id = s_id AND c.academic_year = a_year AND c.semester = sem;
+                WHERE m.student_id = s_id
+                  AND c.academic_year = a_year
+                  AND c.semester = sem;
 
+                -- Insert or update result for this semester
                 INSERT INTO result(student_id, academic_year, semester, sgpa, total_credits)
                 VALUES (s_id, a_year, sem, IF(@total_credits=0,0,@total_credit_points/@total_credits), @total_credits)
                 ON DUPLICATE KEY UPDATE
                     sgpa = IF(@total_credits=0,0,@total_credit_points/@total_credits),
                     total_credits = @total_credits;
 
-                SET sem = IF(sem='1','2','1');
+                SET sem = sem + 1;
             END WHILE;
 
             SET a_year = a_year + 1;
         END WHILE;
+
     END LOOP;
 
     CLOSE student_cursor;
 
+    -- Calculate CGPA dynamically for all students
     UPDATE result r
     JOIN (
         SELECT student_id, SUM(sgpa*total_credits)/SUM(total_credits) AS cgpa_calc
@@ -286,6 +301,13 @@ BEGIN
         GROUP BY student_id
     ) t ON r.student_id = t.student_id
     SET r.cgpa = t.cgpa_calc;
+
 END$$
 
 DELIMITER ;
+
+
+
+
+
+

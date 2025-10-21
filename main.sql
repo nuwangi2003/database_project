@@ -114,8 +114,8 @@ CREATE TABLE marks (
     final_practical DECIMAL(5,2) CHECK (final_practical BETWEEN 0 AND 100),
     ca_marks DECIMAL(5,2),                                                       -- new: calculated from best 2 quizzes + assessment + mid
     final_marks DECIMAL(5,2),                                                     -- total marks including CA + final exams
-    ca_eligible ENUM('Eligible','Not Eligible','Medical') DEFAULT 'Not Eligible',
-    final_eligible ENUM('Eligible','Not Eligible','Medical') DEFAULT 'Not Eligible',
+    ca_eligible ENUM('Eligible','Not Eligible','MC','WH') DEFAULT 'Not Eligible',
+    final_eligible ENUM('Eligible','Not Eligible','MC','WH','E*') DEFAULT 'Not Eligible',
     grade CHAR(2),
     FOREIGN KEY (student_id) REFERENCES student(user_id)
         ON DELETE CASCADE
@@ -130,7 +130,7 @@ CREATE TABLE medical (
     medical_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
     course_id VARCHAR(10),
-    exam_type ENUM('CA', 'Mid', 'Final', 'Attendance') NOT NULL,
+    exam_type ENUM( 'Mid', 'Final', 'Attendance') NOT NULL,
     date_submitted DATE NOT NULL,
     status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
     FOREIGN KEY (student_id) REFERENCES student(user_id)
