@@ -2,8 +2,8 @@ CREATE OR REPLACE VIEW student_results AS
 SELECT 
     s.user_id,
     s.reg_no,
-    m.academic_year,
-    m.semester,
+    c.academic_year,
+    c.semester,
     SUM(c.credit) AS total_credits,
     ROUND(
         SUM(
