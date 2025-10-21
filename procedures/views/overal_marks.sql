@@ -40,4 +40,4 @@ SELECT
 FROM marks m
 JOIN student s ON s.user_id = m.student_id
 JOIN course c ON c.course_id = m.course_id
-GROUP BY s.user_id, m.academic_year, m.semester;
+GROUP BY s.user_id, c.academic_year, c.semester;
