@@ -14,16 +14,30 @@ SELECT
     GROUP_CONCAT(DISTINCT se.session_date ORDER BY se.session_date) AS session_dates,
     COUNT(a.attendance_id) AS total_sessions,
     SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
-    SUM(CASE WHEN a.status = 'Absent' AND a.medical = TRUE THEN 1 ELSE 0 END) AS sessions_medical,
-    SUM(a.hours_attended) AS attended_hours,
-    SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END) AS medical_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+    
+    -- Attended hours for present sessions
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    
+    -- Hours credited for medical cases
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+    
+    -- Total percentage calculation (including medical)
     ROUND(
-        (SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END))
-        / c.total_hours * 100, 2
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours * 100,
+        100), 2
     ) AS attendance_percentage,
+    
     CASE
         WHEN st.status = 'Suspended' THEN 'Not Eligible'
-        WHEN ((SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END)) / c.total_hours) >= 0.8 THEN 'Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours
+        ) >= 0.8 THEN 'Eligible'
         ELSE 'Not Eligible'
     END AS eligibility
 FROM attendance a
@@ -45,20 +59,34 @@ SELECT
     c.name AS course_name,
     c.academic_year,
     c.semester,
+
     COUNT(a.attendance_id) AS total_sessions,
     SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
-    SUM(CASE WHEN a.status = 'Absent' AND a.medical = TRUE THEN 1 ELSE 0 END) AS sessions_medical,
-    SUM(a.hours_attended) AS total_attended_hours,
-    SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END) AS medical_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+
+    -- Total attended + medical hours based on session hours
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+
+    -- Accurate attendance percentage including medical hours
     ROUND(
-        (SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END))
-        / c.total_hours * 100, 2
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours * 100,
+        100), 2
     ) AS attendance_percentage,
+
     CASE
         WHEN st.status = 'Suspended' THEN 'Not Eligible'
-        WHEN ((SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END)) / c.total_hours) >= 0.8 THEN 'Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours
+        ) >= 0.8 THEN 'Eligible'
         ELSE 'Not Eligible'
     END AS eligibility
+
 FROM attendance a
 JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
@@ -90,7 +118,7 @@ GROUP BY c.course_id, c.academic_year, c.semester;
 
 
 -- ============================================
--- Individual Student Summary (All Courses)
+-- Individual Student Summary (All Courses) with Medical Hours Included
 -- ============================================
 CREATE OR REPLACE VIEW student_attendance_summary AS
 SELECT
@@ -101,28 +129,49 @@ SELECT
     c.name AS course_name,
     c.academic_year,
     c.semester,
-    SUM(a.hours_attended) AS total_attended_hours,
-    SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END) AS medical_hours,
+    
+    -- Hours attended in class
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    
+    -- Hours credited due to medical leave
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+    
+    -- Total sessions
     COUNT(a.attendance_id) AS total_sessions,
     SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
-    SUM(CASE WHEN a.status = 'Absent' AND a.medical = TRUE THEN 1 ELSE 0 END) AS sessions_medical,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+    
+    -- Attendance percentage INCLUDING medical hours
     ROUND(
-        (SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END))
-        / c.total_hours * 100, 2
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours * 100,
+        100), 2
     ) AS attendance_percentage,
+    
+    -- Medical hours percentage only
     ROUND(
-        (SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END) / c.total_hours * 100), 2
+        (SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END)
+        / c.total_hours * 100), 2
     ) AS medical_percentage,
+    
+    -- Eligibility based on total effective hours (present + medical)
     CASE
         WHEN st.status = 'Suspended' THEN 'Not Eligible'
-        WHEN ((SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END)) / c.total_hours) >= 0.8 THEN 'Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours
+        ) >= 0.8 THEN 'Eligible'
         ELSE 'Not Eligible'
     END AS eligibility
+
 FROM attendance a
 JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
 JOIN course c ON c.course_id = se.course_id
-GROUP BY st.user_id, c.course_id;
+GROUP BY st.user_id, c.course_id, c.name, c.academic_year, c.semester, st.status, c.total_hours;
 
 
 -- ============================================
@@ -144,15 +193,22 @@ SELECT
     c.name AS course_name,
     se.type AS session_type,
     COUNT(a.attendance_id) AS total_sessions,
-    SUM(a.hours_attended) AS attended_hours,
-    SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END) AS medical_hours,
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
     ROUND(
-        (SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END)) 
-        / c.total_hours * 100, 2
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours * 100,
+        100), 2
     ) AS attendance_percentage,
     CASE
         WHEN st.status = 'Suspended' THEN 'Not Eligible'
-        WHEN ((SUM(a.hours_attended) + SUM(CASE WHEN a.medical = TRUE THEN a.hours_attended ELSE 0 END)) / c.total_hours) >= 0.8 THEN 'Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours
+        ) >= 0.8 THEN 'Eligible'
         ELSE 'Not Eligible'
     END AS eligibility
 FROM attendance a
