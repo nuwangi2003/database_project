@@ -1,0 +1,31 @@
+INSERT INTO users (user_id, name, email, password, role) VALUES
+
+('U001','Admin User','admin@uni.lk','1234','Admin'),
+('U002','Dean User','dean@uni.lk','1234','Dean'),
+('U003','Dr. Amal Perera','amal.perera@uni.lk','1234','Lecturer'),
+('U004','Ms. Nadeesha Silva','nadeesha.sil.lk@uni.lk','1234','Lecturer'),
+('U005','Dr. Kasun Fernando','kasun.fernando@uni.lk','1234','Lecturer'),
+('U006','Mr. Thilina Jayasuriya','thilina.j@uni.lk','1234','Lecturer'),
+('U007','Ms. Chamari Ratnayake','chamari.r@uni.lk','1234','Lecturer'),
+('U008','TechOfficer1','to1@uni.lk','1234','Tech_Officer'),
+('U009','TechOfficer2','to2@uni.lk','1234','Tech_Officer'),
+('U010','TechOfficer3','to3@uni.lk','1234','Tech_Officer'),
+('U011','TechOfficer4','to4@uni.lk','1234','Tech_Officer'),
+('U012','TechOfficer5','to5@uni.lk','1234','Tech_Officer'),
+('U013','Student01 ICT','tg17001@student.uni.lk','1234','Student'),
+('U014','Student02 ICT','tg17002@student.uni.lk','1234','Student'),
+('U015','Student03 ICT','tg17003@student.uni.lk','1234','Student'),
+('U016','Student04 ICT','tg17004@student.uni.lk','1234','Student'),
+('U017','Student05 ICT','tg17005@student.uni.lk','1234','Student'),
+('U018','Student06 ICT','tg17006@student.uni.lk','1234','Student'),
+('U019','Student07 ICT','tg17007@student.uni.lk','1234','Student'),
+('U020','Student08 ICT','tg17008@student.uni.lk','1234','Student'),
+('U021','Student09 ICT','tg17009@student.uni.lk','1234','Student'),
+('U022','Student10 ICT','tg17010@student.uni.lk','1234','Student'),
+('U023','Student11 ICT','tg17011@student.uni.lk','1234','Student'),
+('U024','Student12 ICT','tg17012@student.uni.lk','1234','Student'),
+('U025','Student13 ICT','tg17013@student.uni.lk','1234','Student'),
+('U026','Student14 ICT','tg17014@student.uni.lk','1234','Student'),
+('U027','Student15 ICT','tg17015@student.uni.lk','1234','Student');
+
+
