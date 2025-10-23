@@ -1,5 +1,5 @@
 
---1. Combine Both at the Student Level
+-- 1. Combine Both at the Student Level
 CREATE OR REPLACE VIEW v_student_overall_eligibility AS
 SELECT 
     st.user_id,
@@ -35,7 +35,7 @@ JOIN student st ON st.user_id = m.student_id;
 
 
 
---2. Batch-Level Eligibility (for Whole Course)
+-- 2. Batch-Level Eligibility (for Whole Course)
 CREATE OR REPLACE VIEW v_batch_overall_eligibility AS
 SELECT 
     c.course_id,

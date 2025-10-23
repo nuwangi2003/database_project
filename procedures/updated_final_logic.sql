@@ -197,7 +197,6 @@ DELIMITER ;
 ------------------------
 -- 4. Calculate Results Procedure
 ------------------------
-
 DELIMITER $$
 
 CREATE PROCEDURE calculate_results()
@@ -217,7 +216,7 @@ BEGIN
             LEAVE student_loop;
         END IF;
 
-        -- Inner block for per-student semester cursor (so DECLAREs are at block start)
+        -- Inner block for per-student semester cursor
         BEGIN
             DECLARE done_sem INT DEFAULT FALSE;
             DECLARE a_year INT;
@@ -241,26 +240,32 @@ BEGIN
                     LEAVE sem_loop;
                 END IF;
 
-                UPDATE marks
-                SET grade = CASE
-                    WHEN ca_eligible = 'Not Eligible' AND final_eligible = 'Not Eligible' THEN 'ECA & ESA'
-                    WHEN ca_eligible = 'Not Eligible' THEN 'ECA'
-                    WHEN final_eligible = 'Not Eligible' THEN 'ESA'
-                    WHEN final_marks < 35 THEN 'E'
-                    WHEN final_marks >= 85 THEN 'A+'
-                    WHEN final_marks >= 75 THEN 'A'
-                    WHEN final_marks >= 70 THEN 'A-'
-                    WHEN final_marks >= 65 THEN 'B+'
-                    WHEN final_marks >= 60 THEN 'B'
-                    WHEN final_marks >= 55 THEN 'B-'
-                    WHEN final_marks >= 50 THEN 'C+'
-                    WHEN final_marks >= 45 THEN 'C'
-                    WHEN final_marks >= 40 THEN 'C-'
-                    WHEN final_marks >= 35 THEN 'D'
+                -- Update grades
+                UPDATE marks m
+                JOIN course c ON m.course_id = c.course_id
+                SET m.grade = CASE
+                    WHEN m.ca_eligible = 'MC' OR m.final_eligible = 'MC' THEN 'MC'
+                    WHEN m.ca_eligible = 'Not Eligible' AND m.final_eligible = 'Not Eligible' THEN 'ECA & ESA'
+                    WHEN m.ca_eligible = 'Not Eligible' THEN 'ECA'
+                    WHEN m.final_eligible = 'Not Eligible' THEN 'ESA'
+                    WHEN m.final_marks < 35 THEN 'E'
+                    WHEN m.final_marks >= 85 THEN 'A+'
+                    WHEN m.final_marks >= 75 THEN 'A'
+                    WHEN m.final_marks >= 70 THEN 'A-'
+                    WHEN m.final_marks >= 65 THEN 'B+'
+                    WHEN m.final_marks >= 60 THEN 'B'
+                    WHEN m.final_marks >= 55 THEN 'B-'
+                    WHEN m.final_marks >= 50 THEN 'C+'
+                    WHEN m.final_marks >= 45 THEN 'C'
+                    WHEN m.final_marks >= 40 THEN 'C-'
+                    WHEN m.final_marks >= 35 THEN 'D'
                     ELSE 'E'
                 END
-                WHERE student_id = s_id;
+                WHERE m.student_id = s_id
+                  AND c.academic_year = a_year
+                  AND c.semester = sem;
 
+                -- Calculate SGPA
                 SET @total_credit_points = 0;
                 SET @total_credits = 0;
 
@@ -305,6 +310,7 @@ BEGIN
 
     CLOSE student_cursor;
 
+    -- Calculate CGPA
     UPDATE result r
     JOIN (
         SELECT student_id,
@@ -318,6 +324,7 @@ BEGIN
 END$$
 
 DELIMITER ;
+
 
 
 
