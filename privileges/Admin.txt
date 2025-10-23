@@ -5,7 +5,6 @@ GRANT ALL PRIVILEGES ON db_project.* TO 'admin'@'localhost' WITH GRANT OPTION;
 
 Dean
 
-
 CREATE USER 'dean'@'localhost' IDENTIFIED BY 'Dean@123';
 GRANT ALL PRIVILEGES ON db_project.* TO 'dean'@'localhost';
 
