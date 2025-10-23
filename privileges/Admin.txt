@@ -1,0 +1,28 @@
+Admin
+
+CREATE USER 'admin'@'localhost' IDENTIFIED BY 'Admin@123';
+GRANT ALL PRIVILEGES ON db_project.* TO 'admin'@'localhost' WITH GRANT OPTION;
+
+Dean
+
+CREATE USER 'dean'@'localhost' IDENTIFIED BY 'Dean@123';
+GRANT ALL PRIVILEGES ON db_project.* TO 'dean'@'localhost';
+
+Lecture
+
+CREATE USER 'lecturer'@'localhost' IDENTIFIED BY 'Lecturer@123';
+GRANT SELECT, INSERT, UPDATE, DELETE ON db_project.* TO 'lecturer'@'localhost';
+
+Technical Officer
+
+CREATE USER 'technical_officer'@'localhost' IDENTIFIED BY 'Tech@123';
+GRANT SELECT, INSERT, UPDATE ON db_project.attendance TO 'technical_officer'@'localhost';
+GRANT SELECT ON db_project.final_attendance_view TO 'technical_officer'@'localhost';
+
+
+Student
+
+CREATE USER 'student'@'localhost' IDENTIFIED BY 'Student@123';
+GRANT SELECT ON db_project.final_results_view TO 'student'@'localhost';
+GRANT SELECT ON db_project.final_attendance_view TO 'student'@'localhost';
+
