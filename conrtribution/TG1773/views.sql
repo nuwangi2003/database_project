@@ -21,22 +21,27 @@ JOIN course c ON c.course_id = ac.course_id
 GROUP BY c.course_id, c.academic_year, c.semester;
 
 
-----batch_marks_summary
 
-CREATE OR REPLACE VIEW batch_marks_summary AS
+
+ --Batch-Level Eligibility (for Whole Course)
+CREATE OR REPLACE VIEW v_batch_overall_eligibility AS
 SELECT 
-    m.course_id,
+    c.course_id,
     c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
     COUNT(*) AS total_students,
-    SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END) AS ca_eligible_students,
-    SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END) AS final_eligible_students,
-    ROUND(AVG(m.ca_marks),2) AS avg_ca_marks,
-    ROUND(AVG(m.final_marks),2) AS avg_final_marks,
-    ROUND((SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS ca_eligible_percentage,
-    ROUND((SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS final_eligible_percentage
-FROM marks m
-JOIN course c ON c.course_id = m.course_id
-GROUP BY m.course_id;
+    SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) AS fully_eligible,
+    SUM(CASE WHEN overall_eligibility LIKE 'Not Eligible%' THEN 1 ELSE 0 END) AS not_eligible,
+    SUM(CASE WHEN overall_eligibility = 'Eligible with Medical' THEN 1 ELSE 0 END) AS medical_cases,
+    SUM(CASE WHEN overall_eligibility = 'Withheld' THEN 1 ELSE 0 END) AS withheld_cases,
+
+    ROUND(SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100, 2) AS eligible_percentage
+
+FROM v_student_overall_eligibility soe
+JOIN course c ON c.course_id = soe.course_id
+GROUP BY c.course_id, c.academic_year, c.semester;
 
 -----student_results
 
