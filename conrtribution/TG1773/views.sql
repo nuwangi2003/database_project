@@ -1,0 +1,85 @@
+
+-- Batch Attendance Summary (All Students in a Course)
+
+CREATE OR REPLACE VIEW batch_attendance_summary AS
+SELECT
+    c.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+    ROUND(AVG(ac.attendance_percentage), 2) AS avg_attendance_percentage,
+    SUM(CASE WHEN ac.attendance_percentage >= 80 AND ac.student_status <> 'Suspended' THEN 1 ELSE 0 END) AS eligible_students,
+    COUNT(*) AS total_students,
+    CONCAT(
+        ROUND(
+            (SUM(CASE WHEN ac.attendance_percentage >= 80 AND ac.student_status <> 'Suspended' THEN 1 ELSE 0 END)/COUNT(*))*100, 2
+        ), '%'
+    ) AS eligible_percentage,
+    SUM(CASE WHEN ac.medical_hours > 0 THEN 1 ELSE 0 END) AS students_with_medical
+FROM attendance_combined ac
+JOIN course c ON c.course_id = ac.course_id
+GROUP BY c.course_id, c.academic_year, c.semester;
+
+
+----batch_marks_summary
+
+CREATE OR REPLACE VIEW batch_marks_summary AS
+SELECT 
+    m.course_id,
+    c.name AS course_name,
+    COUNT(*) AS total_students,
+    SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END) AS ca_eligible_students,
+    SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END) AS final_eligible_students,
+    ROUND(AVG(m.ca_marks),2) AS avg_ca_marks,
+    ROUND(AVG(m.final_marks),2) AS avg_final_marks,
+    ROUND((SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS ca_eligible_percentage,
+    ROUND((SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS final_eligible_percentage
+FROM marks m
+JOIN course c ON c.course_id = m.course_id
+GROUP BY m.course_id;
+
+-----student_results
+
+CREATE OR REPLACE VIEW student_results AS
+SELECT 
+    s.user_id,
+    s.reg_no,
+    c.academic_year,
+    c.semester,
+    SUM(c.credit) AS total_credits,
+    ROUND(
+        SUM(
+            CASE 
+                WHEN m.grade IN ('A+','A') THEN 4
+                WHEN m.grade = 'A-' THEN 3.7
+                WHEN m.grade = 'B+' THEN 3.3
+                WHEN m.grade = 'B'  THEN 3
+                WHEN m.grade = 'B-' THEN 2.7
+                WHEN m.grade = 'C+' THEN 2.3
+                WHEN m.grade = 'C'  THEN 2
+                WHEN m.grade = 'C-' THEN 1.7
+                WHEN m.grade = 'D' THEN 1.3
+                ELSE 0   -- Fails: 'E', 'ECA & ESA'
+            END * c.credit
+        ) / SUM(c.credit), 2
+    ) AS sgpa,
+    ROUND(
+        SUM(
+            CASE 
+                WHEN m.grade IN ('A+','A') THEN 4
+                WHEN m.grade = 'A-' THEN 3.7
+                WHEN m.grade = 'B+' THEN 3.3
+                WHEN m.grade = 'B'  THEN 3
+                WHEN m.grade = 'B-' THEN 2.7
+                WHEN m.grade = 'C+' THEN 2.3
+                WHEN m.grade = 'C'  THEN 2
+                WHEN m.grade = 'C-' THEN 1.7
+                WHEN m.grade = 'D' THEN 1.3
+                ELSE 0
+            END * c.credit
+        ) / SUM(c.credit) OVER (PARTITION BY s.user_id), 2
+    ) AS cgpa
+FROM marks m
+JOIN student s ON s.user_id = m.student_id
+JOIN course c ON c.course_id = m.course_id
+GROUP BY s.user_id, c.academic_year, c.semester;
