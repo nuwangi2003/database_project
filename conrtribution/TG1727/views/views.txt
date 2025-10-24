@@ -1,0 +1,58 @@
+								student_course_marks
+
+CREATE OR REPLACE VIEW student_course_marks AS
+SELECT *
+FROM student_marks_summary
+WHERE reg_no = 'STUDENT_REG_NO' 
+AND course_id = 'COURSE_ID';
+
+
+								-- CGPA Check every semester
+CREATE OR REPLACE VIEW v_progressive_cgpa AS
+SELECT
+    r.student_id,
+    s.reg_no,
+    r.academic_year,
+    r.semester,
+    r.sgpa,
+    ROUND((
+        SELECT SUM(r2.sgpa) / COUNT(r2.sgpa)
+        FROM result r2
+        WHERE r2.student_id = r.student_id
+        AND (
+            r2.academic_year < r.academic_year
+            OR (r2.academic_year = r.academic_year AND r2.semester <= r.semester)
+        )
+    ), 2) AS cgpa
+FROM result r
+JOIN student s ON s.user_id = r.student_id
+ORDER BY r.student_id, r.academic_year, r.semester;
+
+
+
+
+								batch_department_marks
+
+CREATE OR REPLACE VIEW batch_department_marks AS
+SELECT
+    s.user_id,
+    s.reg_no,
+    s.batch,
+    d.name AS department_name,
+    m.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+    m.ca_marks,
+    m.final_marks,
+    m.ca_eligible,
+    m.final_eligible,
+    m.grade,
+    CASE
+    WHEN m.grade IN ('E', 'ECA & ESA') THEN 'Fail'
+    ELSE 'Pass'
+    END AS status
+FROM marks m
+JOIN student s ON s.user_id = m.student_id
+JOIN course c ON c.course_id = m.course_id
+LEFT JOIN department d ON s.department_id = d.department_id;

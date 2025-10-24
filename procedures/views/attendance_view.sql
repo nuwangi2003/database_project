@@ -206,3 +206,39 @@ JOIN session se ON se.session_id = a.session_id
 JOIN course c ON c.course_id = se.course_id
 GROUP BY st.user_id, c.course_id, se.type;
 
+
+-- Individual attendance 
+CREATE OR REPLACE VIEW v_student_attendance_details AS
+SELECT 
+    s.reg_no,
+    c.course_id,
+    c.name AS course_name,
+    ses.session_date,
+    ses.type AS session_type,
+    CASE 
+        WHEN m.exam_type = 'Attendance' 
+             AND m.status = 'Approved'
+             AND m.course_id = c.course_id
+             AND m.date_submitted = ses.session_date THEN 'MC'
+        WHEN a.status = 'Present' THEN 'Present'
+        WHEN a.status = 'Absent' THEN 'Absent'
+        ELSE 'Not Recorded'
+    END AS attendance_status
+FROM attendance a
+JOIN student s 
+    ON s.user_id = a.student_id
+JOIN session ses 
+    ON ses.session_id = a.session_id
+JOIN course c 
+    ON c.course_id = ses.course_id
+LEFT JOIN medical m 
+    ON m.student_id = s.user_id
+   AND m.exam_type = 'Attendance'
+   AND m.status = 'Approved'
+   AND m.course_id = c.course_id             
+   AND m.date_submitted = ses.session_date    
+ORDER BY s.reg_no, c.course_id, ses.session_date;
+
+
+
+
