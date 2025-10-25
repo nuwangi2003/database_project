@@ -213,166 +213,12 @@ END$$
 
 DELIMITER ;
 
+
+
+
 CALL generate_full_student_report('TG/2023/1704');
- 
-
-
--- Cgpa Check every sem
-DELIMITER $$
-
-DROP PROCEDURE IF EXISTS get_progressive_cgpa$$
-
-CREATE PROCEDURE get_progressive_cgpa(IN p_student_id VARCHAR(10))
-BEGIN
-    SELECT
-        r.student_id,
-        s.reg_no,
-        r.academic_year,
-        r.semester,
-        CASE
-            WHEN EXISTS (
-                SELECT 1
-                FROM marks m
-                JOIN course c ON c.course_id = m.course_id
-                WHERE m.student_id = r.student_id
-                  AND c.academic_year = r.academic_year
-                  AND c.semester = r.semester
-                  AND m.grade = 'MC'
-            ) THEN 'WH'
-            ELSE CAST(r.sgpa AS CHAR)
-        END AS sgpa,
-        CASE
-            WHEN EXISTS (
-                SELECT 1
-                FROM marks m
-                JOIN course c ON c.course_id = m.course_id
-                WHERE m.student_id = r.student_id
-                  AND c.academic_year = r.academic_year
-                  AND c.semester = r.semester
-                  AND m.grade = 'MC'
-            ) THEN 'WH'
-            ELSE CAST(
-                ROUND((
-                    SELECT SUM(r2.sgpa) / COUNT(r2.sgpa)
-                    FROM result r2
-                    WHERE r2.student_id = r.student_id
-                      AND (
-                            r2.academic_year < r.academic_year
-                            OR (r2.academic_year = r.academic_year AND r2.semester <= r.semester)
-                          )
-                ), 2) AS CHAR)
-        END AS cgpa
-    FROM result r
-    JOIN student s ON s.user_id = r.student_id
-    WHERE (p_student_id IS NULL OR r.student_id = p_student_id)
-    ORDER BY r.student_id, r.academic_year, r.semester;
-END$$
-
-DELIMITER ;
-
-
--- batch_department_marks
-
-DELIMITER $$
-
-DROP PROCEDURE IF EXISTS get_batch_department_marks$$
-
-CREATE PROCEDURE get_batch_department_marks(IN p_batch VARCHAR(10))
-BEGIN
-    SELECT 
-        s.user_id,
-        s.reg_no,
-        s.batch,
-        d.name AS department_name,
-        m.course_id,
-        c.name AS course_name,
-        c.academic_year,
-        c.semester,
-        m.ca_marks,
-        m.final_marks,
-        m.ca_eligible,
-        m.final_eligible,
-        m.grade,
-        CASE 
-            WHEN m.grade = 'MC' THEN 'WH'
-            WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA') THEN 'Fail'
-            ELSE 'Pass'
-        END AS status
-    FROM marks m
-    JOIN student s 
-        ON s.user_id = m.student_id
-    JOIN course c 
-        ON c.course_id = m.course_id
-    LEFT JOIN department d 
-        ON s.department_id = d.department_id
-    WHERE (p_batch IS NULL OR s.batch = p_batch)
-    ORDER BY s.batch, d.name, s.reg_no, c.academic_year, c.semester;
-END$$
-
-DELIMITER ;
-
-
-							
-
---- 1) Student-level overall eligibility (reg_no comes from student)
--- Drop procedure if it exists
-DROP PROCEDURE IF EXISTS get_student_overall_eligibility;
-
-DELIMITER $$
-
-CREATE PROCEDURE get_student_overall_eligibility()
-BEGIN
-    SELECT 
-        m.student_id,
-        s.reg_no,
-        m.course_id,
-        c.name AS course_name,
-        c.academic_year,
-        c.semester,
-
-        -- From attendance summary (may be NULL if no summary)
-        COALESCE(sas.attendance_percentage, 0) AS attendance_percentage,
-        COALESCE(sas.eligibility, 'Unknown') AS attendance_eligibility,
-
-        -- From marks table
-        m.ca_marks,
-        m.ca_eligible,
-        m.final_eligible,
-
-        -- Overall Eligibility Logic
-        CASE
-            WHEN COALESCE(sas.eligibility, 'Unknown') = 'Not Eligible' 
-                THEN 'Not Eligible (Attendance < 80%)'
-            WHEN COALESCE(m.ca_eligible, 'Not Eligible') = 'Not Eligible' 
-                THEN 'Not Eligible (CA Failed)'
-            WHEN COALESCE(m.final_eligible, 'Not Eligible') = 'Not Eligible' 
-                THEN 'Not Eligible (Final Failed)'
-            WHEN COALESCE(m.ca_eligible, '') = 'WH' OR COALESCE(m.final_eligible, '') = 'WH' 
-                THEN 'Withheld'
-            WHEN COALESCE(m.ca_eligible, '') = 'MC' OR COALESCE(m.final_eligible, '') = 'MC' 
-                THEN 'Eligible with Medical'
-            ELSE 'Fully Eligible'
-        END AS overall_eligibility
-    FROM marks m
-    LEFT JOIN student_attendance_summary sas
-        ON sas.student_id = m.student_id
-        AND sas.course_id = m.course_id
-    JOIN course c
-        ON c.course_id = m.course_id
-    LEFT JOIN student_course sc
-        ON sc.student_id = m.student_id
-        AND sc.course_id = m.course_id
-    JOIN student s
-        ON s.user_id = m.student_id;
-END$$
-
-DELIMITER ;
-
-
-
-
-
 --give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
+
 
 
 DELIMITER $$
@@ -427,7 +273,6 @@ BEGIN
     SELECT 
         c.course_id,
         c.name AS course_name,
-        c.academic_year,
         c.semester,
 
         COUNT(*) AS total_students,
@@ -446,7 +291,7 @@ END $$
 
 
 
- 
+
 
 
 -- Cgpa Check every sem
@@ -549,9 +394,11 @@ DELIMITER ;
 
 CALL get_batch_department_marks('2023');
 
-								
 
-								
+
+
+
+
 -- Drop procedure if it exists
 DROP PROCEDURE IF EXISTS get_student_overall_eligibility;
 
