@@ -1,4 +1,5 @@
 
+-- calculate results stored procedure
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS calculate_results$$
