@@ -287,7 +287,7 @@ SELECT
     s.reg_no,
     r.academic_year,
     r.semester,
-    r.sgpa
+    r.sgpa,
     CASE
         WHEN EXISTS (
             SELECT 1
