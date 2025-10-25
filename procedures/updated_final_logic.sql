@@ -1,15 +1,7 @@
 
 -- ==============================
-<<<<<<< HEAD
--- 1️⃣ Attendance Triggers
+-- 1️ Attendance Triggers
 -- ==============================
-
--- Attendance Triggers
-=======
--- Attendance Triggers
--- ==============================
-
->>>>>>> 36c5141c9965a6a1128e63042137ad86647c221b
 
 DELIMITER $$
 
