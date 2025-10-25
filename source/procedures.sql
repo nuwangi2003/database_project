@@ -1,7 +1,8 @@
-
+-- ============================
+-- Procedure: calculate_results
+-- ============================
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS calculate_results$$
 
 CREATE PROCEDURE calculate_results()
 BEGIN
@@ -143,6 +144,59 @@ BEGIN
         GROUP BY student_id
     ) t ON r.student_id = t.student_id
     SET r.cgpa = t.calc_cgpa;
+END$$
+
+DELIMITER ;
+
+
+
+
+
+
+-- =================================
+-- Procedure: generate_student_academic_report
+-- =================================
+DELIMITER $$
+
+CREATE PROCEDURE generate_student_academic_report(IN p_reg_no VARCHAR(15))
+BEGIN
+    -- Student Marks Summary
+    SELECT 
+        s.reg_no,
+        m.course_id,
+        c.name AS course_name,
+        m.ca_marks,
+        m.final_marks,
+        m.ca_eligible,
+        m.final_eligible,
+        m.grade
+    FROM marks m
+    JOIN student s ON s.user_id = m.student_id
+    JOIN course c ON c.course_id = m.course_id
+    WHERE (p_reg_no IS NULL OR s.reg_no = p_reg_no)
+    ORDER BY s.reg_no, m.course_id;
+
+    -- Semester Pass/Fail Status
+    SELECT 
+        spf.reg_no,
+        spf.academic_year,
+        spf.semester,
+        spf.sgpa,
+        spf.semester_result
+    FROM semester_pass_fail spf
+    WHERE (p_reg_no IS NULL OR spf.reg_no = p_reg_no)
+    ORDER BY spf.academic_year, spf.semester;
+
+    -- Class Status (based on CGPA)
+    SELECT 
+        sc.reg_no,
+        sc.academic_year,
+        sc.semester,
+        sc.cgpa,
+        sc.class_status
+    FROM student_class sc
+    WHERE (p_reg_no IS NULL OR sc.reg_no = p_reg_no)
+    ORDER BY sc.cgpa DESC;
 END$$
 
 DELIMITER ;

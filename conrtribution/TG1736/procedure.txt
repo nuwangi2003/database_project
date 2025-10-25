@@ -1,0 +1,43 @@
+DELIMITER $$
+
+CREATE PROCEDURE generate_full_student_report(IN p_reg_no VARCHAR(15))
+BEGIN
+    
+    SELECT 
+        sms.reg_no,
+        sms.course_id,
+        sms.course_name,
+        sms.ca_marks,
+        sms.final_marks,
+        sms.grade
+    FROM student_marks_summary sms
+    WHERE sms.reg_no = p_reg_no
+    ORDER BY sms.course_id;
+
+    
+    SELECT 
+        spf.reg_no,
+        spf.academic_year,
+        spf.semester,
+        spf.sgpa,
+        spf.semester_result
+    FROM semester_pass_fail spf
+    WHERE spf.reg_no = p_reg_no
+    ORDER BY spf.academic_year, spf.semester;
+
+    
+    SELECT 
+        sc.reg_no,
+        sc.academic_year,
+        sc.semester,
+        sc.cgpa,
+        sc.class_status
+    FROM student_class sc
+    WHERE sc.reg_no = p_reg_no;
+END$$
+
+DELIMITER ;
+
+
+
+CALL generate_full_student_report('TG/2023/1704');

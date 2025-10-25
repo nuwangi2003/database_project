@@ -12,3 +12,5 @@ SELECT
 FROM marks m
 JOIN course c ON c.course_id = m.course_id
 GROUP BY m.course_id;
+
+
