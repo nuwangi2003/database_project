@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 -- ==============================
 -- 1️⃣ Attendance Triggers
 -- ==============================
+=======
+-- Attendance Triggers
+>>>>>>> ab9a3b195859b395e31bd7e9f6835280403a8b60
 DELIMITER $$
 
 CREATE TRIGGER trg_attendance_before_insert
@@ -97,9 +101,7 @@ BEGIN
     SET c = IFNULL(NEW.quiz3_marks,0);
 
     SET best_two_sum = a + b + c - LEAST(a,b,c);
-    SET NEW.ca_marks = ROUND((best_two_sum/2*0.10)
-                      + IFNULL(NEW.assessment_marks,0)*0.15
-                      + IFNULL(NEW.mid_marks,0)*0.15,2);
+    SET NEW.ca_marks = ROUND((best_two_sum/2*0.10)+ IFNULL(NEW.assessment_marks,0)*0.15+ IFNULL(NEW.mid_marks,0)*0.15,2);
 END$$
 
 
@@ -115,8 +117,7 @@ BEGIN
 
     SET best_two_sum = a + b + c - LEAST(a,b,c);
     SET NEW.ca_marks = ROUND((best_two_sum/2*0.10)
-                      + IFNULL(NEW.assessment_marks,0)*0.15
-                      + IFNULL(NEW.mid_marks,0)*0.15,2);
++ IFNULL(NEW.assessment_marks,0)*0.15+ IFNULL(NEW.mid_marks,0)*0.15,2);
 END$$
 
 DELIMITER ;
@@ -147,13 +148,12 @@ BEGIN
 
     SELECT COUNT(*) INTO mid_med
     FROM medical
-    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
-          AND exam_type = 'Mid' AND status = 'Approved';
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id AND exam_type = 'Mid' AND status = 'Approved';
 
     SELECT COUNT(*) INTO final_med
     FROM medical
     WHERE student_id = NEW.student_id AND course_id = NEW.course_id
-          AND exam_type = 'Final' AND status = 'Approved';
+    AND exam_type = 'Final' AND status = 'Approved';
 
     -- CA eligibility
     IF student_status = 'Suspended' THEN
@@ -180,8 +180,7 @@ BEGIN
     END IF;
 
     -- Final marks
-    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)
-                      + IFNULL(NEW.ca_marks,0),2);
+    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)+ IFNULL(NEW.ca_marks,0),2);
 END$$
 
 
@@ -206,12 +205,11 @@ BEGIN
     SELECT COUNT(*) INTO mid_med
     FROM medical
     WHERE student_id = NEW.student_id AND course_id = NEW.course_id
-          AND exam_type = 'Mid' AND status = 'Approved';
+    AND exam_type = 'Mid' AND status = 'Approved';
 
     SELECT COUNT(*) INTO final_med
     FROM medical
-    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
-          AND exam_type = 'Final' AND status = 'Approved';
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id AND exam_type = 'Final' AND status = 'Approved';
 
     -- CA eligibility
     IF student_status = 'Suspended' THEN
@@ -237,8 +235,7 @@ BEGIN
         SET NEW.final_eligible = 'Eligible';
     END IF;
 
-    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)
-                      + IFNULL(NEW.ca_marks,0),2);
+    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)+ IFNULL(NEW.ca_marks,0),2);
 END$$
 DELIMITER ;
 
@@ -309,9 +306,7 @@ BEGIN
                     WHEN m.final_marks >= 35 THEN 'D'
                     ELSE 'E'
                 END
-                WHERE m.student_id = s_id
-                  AND c.academic_year = a_year
-                  AND c.semester = sem;
+                WHERE m.student_id = s_id AND c.academic_year = a_year AND c.semester = sem;
 
                 -- Cap repeat students' grades
                 UPDATE marks m
@@ -320,9 +315,7 @@ BEGIN
                 SET m.grade = CASE
                     WHEN sc.status = 'Repeat' AND m.grade IN ('A+','A','A-','B+','B','B-','C+') THEN 'C'
                     ELSE m.grade END
-                WHERE m.student_id = s_id
-                  AND c.academic_year = a_year
-                  AND c.semester = sem;
+                WHERE m.student_id = s_id AND c.academic_year = a_year AND c.semester = sem;
 
                 -- Calculate SGPA for this student/year/semester (exclude non-numeric grade types)
                 SET @total_points = 0;
