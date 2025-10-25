@@ -13,7 +13,7 @@ Lecture
 
 CREATE USER 'lecturer'@'localhost' IDENTIFIED BY 'Lecturer@123';
 GRANT ALL PRIVILEGES ON db_project.* TO 'lecturer'@'localhost';
-GRANT CREATE USER ON db_project.* TO 'lecturer'@'localhost';
+ 
 
                                                         Technical Officer
 
