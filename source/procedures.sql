@@ -217,7 +217,7 @@ CALL generate_full_student_report('TG/2023/1704');
  
 
 
- 								-- Cgpa Check every sem
+-- Cgpa Check every sem
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS get_progressive_cgpa$$
@@ -271,7 +271,7 @@ END$$
 DELIMITER ;
 
 
-								-- batch_department_marks
+-- batch_department_marks
 
 DELIMITER $$
 
@@ -312,9 +312,9 @@ END$$
 DELIMITER ;
 
 
-								v_student_overall_eligibility
+							
 
-								--- 1) Student-level overall eligibility (reg_no comes from student)
+--- 1) Student-level overall eligibility (reg_no comes from student)
 -- Drop procedure if it exists
 DROP PROCEDURE IF EXISTS get_student_overall_eligibility;
 
@@ -368,7 +368,7 @@ END$$
 
 DELIMITER ;
 
-=======
+
 
 
 
@@ -397,9 +397,6 @@ DELIMITER ;
 
 
 --  check one student eligibility CALL get_student_eligibility('U013', 'ICT1222');
-
-
-
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS get_student_eligibility$$
@@ -421,8 +418,6 @@ DELIMITER ;
 
 
 ----  one course check final marks and eligibility  CALL get_batch_marks_summary_by_course(''Database Management Systems'');
-
-
 DELIMITER $$
 
 CREATE PROCEDURE  get_batch_marks_summary_by_course (
