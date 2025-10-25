@@ -1,8 +1,7 @@
 
 -- ==============================
--- Attendance Triggers
+-- 1️ Attendance Triggers
 -- ==============================
-
 
 DELIMITER $$
 
