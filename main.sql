@@ -1,4 +1,4 @@
-
+--db_name
 CREATE DATABASE IF NOT EXISTS db_project;
 USE db_project;
 
