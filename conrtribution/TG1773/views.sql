@@ -24,7 +24,7 @@ GROUP BY c.course_id, c.academic_year, c.semester;
 
 
  --Batch-Level Eligibility (for Whole Course)
-CREATE OR REPLACE VIEW v_batch_overall_eligibility AS
+CREATE OR REPLACE VIEW batch_overall_eligibility AS
 SELECT 
     c.course_id,
     c.name AS course_name,
