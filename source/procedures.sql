@@ -160,43 +160,55 @@ DELIMITER $$
 
 CREATE PROCEDURE generate_student_academic_report(IN p_reg_no VARCHAR(15))
 BEGIN
-    -- Student Marks Summary
-    SELECT 
-        s.reg_no,
-        m.course_id,
-        c.name AS course_name,
-        m.ca_marks,
-        m.final_marks,
-        m.ca_eligible,
-        m.final_eligible,
-        m.grade
-    FROM marks m
-    JOIN student s ON s.user_id = m.student_id
-    JOIN course c ON c.course_id = m.course_id
-    WHERE (p_reg_no IS NULL OR s.reg_no = p_reg_no)
-    ORDER BY s.reg_no, m.course_id;
+    DECLARE v_student_id VARCHAR(10);
 
-    -- Semester Pass/Fail Status
-    SELECT 
-        spf.reg_no,
-        spf.academic_year,
-        spf.semester,
-        spf.sgpa,
-        spf.semester_result
-    FROM semester_pass_fail spf
-    WHERE (p_reg_no IS NULL OR spf.reg_no = p_reg_no)
-    ORDER BY spf.academic_year, spf.semester;
+    
+    SELECT user_id INTO v_student_id
+    FROM student
+    WHERE reg_no = p_reg_no;
 
-    -- Class Status (based on CGPA)
-    SELECT 
-        sc.reg_no,
-        sc.academic_year,
-        sc.semester,
-        sc.cgpa,
-        sc.class_status
-    FROM student_class sc
-    WHERE (p_reg_no IS NULL OR sc.reg_no = p_reg_no)
-    ORDER BY sc.cgpa DESC;
+    
+    IF v_student_id IS NULL THEN
+        SELECT CONCAT('No student found with reg_no: ', p_reg_no) AS message;
+    ELSE
+        
+        SELECT 
+            s.reg_no,
+            s.batch,
+            s.department_id
+        FROM student s
+        WHERE s.user_id = v_student_id;
+
+        
+        SELECT 
+            course_id,
+            course_name,
+            ca_marks,
+            final_marks,
+            ca_eligible,
+            final_eligible,
+            grade
+        FROM student_marks_summary
+        WHERE student_id = v_student_id;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            semester_result
+        FROM semester_pass_fail
+        WHERE reg_no = p_reg_no;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            cgpa,
+            class_status
+        FROM student_class
+        WHERE reg_no = p_reg_no;
+    END IF;
+
 END$$
 
 DELIMITER ;
@@ -282,3 +294,6 @@ BEGIN
 END $$
 
 DELIMITER ;
+=======
+CALL generate_full_student_report('TG/2023/1704');
+
