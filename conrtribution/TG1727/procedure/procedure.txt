@@ -1,7 +1,7 @@
  
 
 
- 								-- Cgpa Check every sem
+-- Cgpa Check every sem
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS get_progressive_cgpa$$
@@ -59,9 +59,7 @@ CALL get_progressive_cgpa('U013');
 
 
 
-
-
-								-- batch_department_marks
+-- batch_department_marks
 
 DELIMITER $$
 
@@ -103,9 +101,9 @@ DELIMITER ;
 
 CALL get_batch_department_marks('2023');
 
-								v_student_overall_eligibility
+								
 
-								--- 1) Student-level overall eligibility (reg_no comes from student)
+								
 -- Drop procedure if it exists
 DROP PROCEDURE IF EXISTS get_student_overall_eligibility;
 
