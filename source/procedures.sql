@@ -213,8 +213,11 @@ END$$
 
 DELIMITER ;
 
---give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
+
+
+
 CALL generate_full_student_report('TG/2023/1704');
+--give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
 
 
 
@@ -240,9 +243,6 @@ DELIMITER ;
 
 
 --  check one student eligibility CALL get_student_eligibility('U013', 'ICT1222');
-
-
-
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS get_student_eligibility$$
@@ -264,8 +264,6 @@ DELIMITER ;
 
 
 ----  one course check final marks and eligibility  CALL get_batch_marks_summary_by_course(''Database Management Systems'');
-
-
 DELIMITER $$
 
 CREATE PROCEDURE  get_batch_marks_summary_by_course (
@@ -290,6 +288,4 @@ BEGIN
     WHERE c.name = p_course_name
     GROUP BY c.course_id, c.academic_year, c.semester;
 END $$
-
-DELIMITER ;
 
