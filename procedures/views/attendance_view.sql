@@ -1,12 +1,12 @@
--- ============================================
+
 -- Detailed Attendance per Student per Course (Theory / Practical)
--- ============================================
+
 CREATE OR REPLACE VIEW attendance_detailed AS
-SELECT 
-    st.user_id,
-    st.reg_no,
-    st.status AS student_status,
-    c.course_id,
+SELECT
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
     c.name AS course_name,
     c.academic_year,
     c.semester,
@@ -15,11 +15,10 @@ SELECT
     COUNT(a.attendance_id) AS total_sessions,
     SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
     SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
-    
+   
     SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
     SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
 
-    -- Use actual session hours
     ROUND(
         LEAST(
             (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
@@ -29,7 +28,7 @@ SELECT
     ) AS attendance_percentage,
 
     CASE
-        WHEN st.status = 'Suspended' THEN 'Not Eligible'
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
         WHEN (
             (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
              SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
@@ -38,21 +37,22 @@ SELECT
         ELSE 'Not Eligible'
     END AS eligibility
 FROM attendance a
-JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-GROUP BY st.user_id, c.course_id, se.type;
+GROUP BY sc.student_id, se.course_id, se.type;
 
 
--- ============================================
--- Combined Attendance per Student per Course (Theory + Practical)
--- ============================================
+
+-- Combined Attendance per Student per Course
+
 CREATE OR REPLACE VIEW attendance_combined AS
-SELECT 
-    st.user_id,
-    st.reg_no,
-    st.status AS student_status,
-    c.course_id,
+SELECT
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
     c.name AS course_name,
     c.academic_year,
     c.semester,
@@ -61,11 +61,9 @@ SELECT
     SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
     SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
 
-    -- Total attended + medical hours based on session hours
     SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
     SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
 
-    -- Accurate attendance percentage including medical hours
     ROUND(
         LEAST(
             (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
@@ -75,7 +73,7 @@ SELECT
     ) AS attendance_percentage,
 
     CASE
-        WHEN st.status = 'Suspended' THEN 'Not Eligible'
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
         WHEN (
             (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
              SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
@@ -85,44 +83,22 @@ SELECT
     END AS eligibility
 
 FROM attendance a
-JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-GROUP BY st.user_id, c.course_id;
+GROUP BY sc.student_id, se.course_id;
 
 
--- ============================================
--- Batch Attendance Summary (All Students in a Course)
--- ============================================
-CREATE OR REPLACE VIEW batch_attendance_summary AS
-SELECT
-    c.course_id,
-    c.name AS course_name,
-    c.academic_year,
-    c.semester,
-    ROUND(AVG(ac.attendance_percentage), 2) AS avg_attendance_percentage,
-    SUM(CASE WHEN ac.attendance_percentage >= 80 AND ac.student_status <> 'Suspended' THEN 1 ELSE 0 END) AS eligible_students,
-    COUNT(*) AS total_students,
-    CONCAT(
-        ROUND(
-            (SUM(CASE WHEN ac.attendance_percentage >= 80 AND ac.student_status <> 'Suspended' THEN 1 ELSE 0 END)/COUNT(*))*100, 2
-        ), '%'
-    ) AS eligible_percentage,
-    SUM(CASE WHEN ac.medical_hours > 0 THEN 1 ELSE 0 END) AS students_with_medical
-FROM attendance_combined ac
-JOIN course c ON c.course_id = ac.course_id
-GROUP BY c.course_id, c.academic_year, c.semester;
 
+-- Individual Student Attendance Summary
 
--- ============================================
--- Individual Student Summary (All Courses) with Medical Hours Included
--- ============================================
 CREATE OR REPLACE VIEW student_attendance_summary AS
 SELECT
-    st.user_id,
-    st.reg_no,
-    st.status AS student_status,
-    c.course_id,
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
     c.name AS course_name,
     c.academic_year,
     c.semester,
@@ -147,7 +123,7 @@ SELECT
     ) AS medical_percentage,
 
     CASE
-        WHEN st.status = 'Suspended' THEN 'Not Eligible'
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
         WHEN (
             (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
              SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
@@ -156,53 +132,42 @@ SELECT
         ELSE 'Not Eligible'
     END AS eligibility
 FROM attendance a
-JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-GROUP BY st.user_id, c.course_id;
-
--- ============================================
--- Individual Student for Specific Course
--- ============================================
-CREATE OR REPLACE VIEW student_course_attendance AS
-SELECT *
-FROM student_attendance_summary;
+GROUP BY sc.student_id, se.course_id;
 
 
--- ============================================
--- Student Attendance Split (Theory / Practical)
--- ============================================
-CREATE OR REPLACE VIEW student_attendance_split AS
+
+-- Individual Session Attendance Details
+
+CREATE OR REPLACE VIEW v_student_attendance_details AS
 SELECT
-    st.user_id,
-    st.reg_no,
-    c.course_id,
+    s.reg_no,
+    a.student_id,
+    se.course_id,
     c.name AS course_name,
+    se.session_date,
     se.type AS session_type,
-    COUNT(a.attendance_id) AS total_sessions,
-    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
-    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
-
-    ROUND(
-        LEAST(
-            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
-             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
-            / SUM(se.session_hours) * 100,
-        100), 2
-    ) AS attendance_percentage,
-
     CASE
-        WHEN st.status = 'Suspended' THEN 'Not Eligible'
-        WHEN (
-            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
-             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
-            / SUM(se.session_hours)
-        ) >= 0.8 THEN 'Eligible'
-        ELSE 'Not Eligible'
-    END AS eligibility
+        WHEN m.exam_type = 'Attendance'
+             AND m.status = 'Approved'
+             AND m.course_id = se.course_id
+             AND m.date_submitted = se.session_date THEN 'MC'
+        WHEN a.status = 'Present' THEN 'Present'
+        WHEN a.status = 'Absent' THEN 'Absent'
+        ELSE 'Not Recorded'
+    END AS attendance_status
 FROM attendance a
-JOIN student st ON st.user_id = a.student_id
 JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-GROUP BY st.user_id, c.course_id, se.type;
-
+LEFT JOIN medical m
+    ON m.student_id = a.student_id
+   AND m.exam_type = 'Attendance'
+   AND m.status = 'Approved'
+   AND m.course_id = se.course_id            
+   AND m.date_submitted = se.session_date    
+ORDER BY s.reg_no, se.course_id, se.session_date;

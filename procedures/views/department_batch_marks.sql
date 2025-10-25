@@ -1,3 +1,9 @@
+-- ==============================================================
+-- View Name   : batch_department_marks
+-- Description  : Displays each student's marks with batch,
+--                department, course details, and pass/fail/withheld status.
+-- ==============================================================
+
 CREATE OR REPLACE VIEW batch_department_marks AS
 SELECT 
     s.user_id,
@@ -14,10 +20,15 @@ SELECT
     m.final_eligible,
     m.grade,
     CASE 
-        WHEN m.grade IN ('E', 'ECA & ESA') THEN 'Fail'
+        WHEN m.grade = 'MC' THEN 'WH'         -- Withheld due to Medical
+        WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA') THEN 'Fail'
         ELSE 'Pass'
     END AS status
 FROM marks m
-JOIN student s ON s.user_id = m.student_id
-JOIN course c ON c.course_id = m.course_id
-LEFT JOIN department d ON s.department_id = d.department_id;
+JOIN student s 
+    ON s.user_id = m.student_id
+JOIN course c 
+    ON c.course_id = m.course_id
+LEFT JOIN department d 
+    ON s.department_id = d.department_id
+ORDER BY s.batch, d.name, s.reg_no, c.academic_year, c.semester;

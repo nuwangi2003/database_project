@@ -23,7 +23,6 @@ CREATE TABLE student (
     user_id VARCHAR(10) PRIMARY KEY,
     reg_no VARCHAR(15) UNIQUE NOT NULL,
     batch VARCHAR(10),
-    status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper',
     department_id VARCHAR(10),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
         ON DELETE CASCADE
@@ -159,6 +158,7 @@ CREATE TABLE result (
 CREATE TABLE student_course (
     student_id VARCHAR(10),
     course_id VARCHAR(10),
+    status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper',
     PRIMARY KEY (student_id, course_id),
     FOREIGN KEY (student_id) REFERENCES student(user_id)
         ON DELETE CASCADE
