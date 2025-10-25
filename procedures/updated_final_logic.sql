@@ -1,3 +1,4 @@
+-- Attendance Triggers
 DELIMITER $$
 
 -- BEFORE INSERT Trigger

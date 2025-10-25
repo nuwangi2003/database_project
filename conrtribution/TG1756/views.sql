@@ -1,4 +1,3 @@
-
 -- Detailed Attendance per Student per Course (Theory / Practical)
 
 CREATE OR REPLACE VIEW attendance_detailed AS
