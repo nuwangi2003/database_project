@@ -21,7 +21,7 @@ SELECT
     m.grade,
     CASE 
         WHEN m.grade = 'MC' THEN 'WH'         -- Withheld due to Medical
-        WHEN m.grade IN ('E', 'ECA & ESA') THEN 'Fail'
+        WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA') THEN 'Fail'
         ELSE 'Pass'
     END AS status
 FROM marks m

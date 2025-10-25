@@ -21,65 +21,77 @@ JOIN course c ON c.course_id = ac.course_id
 GROUP BY c.course_id, c.academic_year, c.semester;
 
 
-----batch_marks_summary
 
-CREATE OR REPLACE VIEW batch_marks_summary AS
+
+ --Batch-Level Eligibility (for Whole Course)
+CREATE OR REPLACE VIEW batch_overall_eligibility AS
 SELECT 
-    m.course_id,
+    c.course_id,
     c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
     COUNT(*) AS total_students,
-    SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END) AS ca_eligible_students,
-    SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END) AS final_eligible_students,
-    ROUND(AVG(m.ca_marks),2) AS avg_ca_marks,
-    ROUND(AVG(m.final_marks),2) AS avg_final_marks,
-    ROUND((SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS ca_eligible_percentage,
-    ROUND((SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS final_eligible_percentage
-FROM marks m
-JOIN course c ON c.course_id = m.course_id
-GROUP BY m.course_id;
+    SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) AS fully_eligible,
+    SUM(CASE WHEN overall_eligibility LIKE 'Not Eligible%' THEN 1 ELSE 0 END) AS not_eligible,
+    SUM(CASE WHEN overall_eligibility = 'Eligible with Medical' THEN 1 ELSE 0 END) AS medical_cases,
+    SUM(CASE WHEN overall_eligibility = 'Withheld' THEN 1 ELSE 0 END) AS withheld_cases,
+
+    ROUND(SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100, 2) AS eligible_percentage
+
+FROM student_overall_eligibility soe
+JOIN course c ON c.course_id = soe.course_id
+GROUP BY c.course_id, c.academic_year, c.semester;
 
 -----student_results
 
 CREATE OR REPLACE VIEW student_results AS
 SELECT 
-    s.user_id,
-    s.reg_no,
-    c.academic_year,
-    c.semester,
-    SUM(c.credit) AS total_credits,
+    t.user_id,
+    t.reg_no,
+    t.academic_year,
+    t.semester,
+    t.total_credits,
+    t.sgpa,
     ROUND(
-        SUM(
-            CASE 
-                WHEN m.grade IN ('A+','A') THEN 4
-                WHEN m.grade = 'A-' THEN 3.7
-                WHEN m.grade = 'B+' THEN 3.3
-                WHEN m.grade = 'B'  THEN 3
-                WHEN m.grade = 'B-' THEN 2.7
-                WHEN m.grade = 'C+' THEN 2.3
-                WHEN m.grade = 'C'  THEN 2
-                WHEN m.grade = 'C-' THEN 1.7
-                WHEN m.grade = 'D' THEN 1.3
-                ELSE 0   -- Fails: 'E', 'ECA & ESA'
-            END * c.credit
-        ) / SUM(c.credit), 2
-    ) AS sgpa,
-    ROUND(
-        SUM(
-            CASE 
-                WHEN m.grade IN ('A+','A') THEN 4
-                WHEN m.grade = 'A-' THEN 3.7
-                WHEN m.grade = 'B+' THEN 3.3
-                WHEN m.grade = 'B'  THEN 3
-                WHEN m.grade = 'B-' THEN 2.7
-                WHEN m.grade = 'C+' THEN 2.3
-                WHEN m.grade = 'C'  THEN 2
-                WHEN m.grade = 'C-' THEN 1.7
-                WHEN m.grade = 'D' THEN 1.3
-                ELSE 0
-            END * c.credit
-        ) / SUM(c.credit) OVER (PARTITION BY s.user_id), 2
+        SUM(t.sgpa * t.total_credits) OVER (PARTITION BY t.user_id 
+                                            ORDER BY t.academic_year, t.semester
+                                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+        / 
+        SUM(t.total_credits) OVER (PARTITION BY t.user_id 
+                                   ORDER BY t.academic_year, t.semester
+                                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 
+        2
     ) AS cgpa
-FROM marks m
-JOIN student s ON s.user_id = m.student_id
-JOIN course c ON c.course_id = m.course_id
-GROUP BY s.user_id, c.academic_year, c.semester;
+FROM (
+    SELECT 
+        s.user_id,
+        s.reg_no,
+        c.academic_year,
+        c.semester,
+        SUM(c.credit) AS total_credits,
+        ROUND(
+            SUM(
+                CASE 
+                    WHEN m.grade = 'A+' THEN 4.0
+                    WHEN m.grade = 'A'  THEN 4.0
+                    WHEN m.grade = 'A-' THEN 3.7
+                    WHEN m.grade = 'B+' THEN 3.3
+                    WHEN m.grade = 'B'  THEN 3.0
+                    WHEN m.grade = 'B-' THEN 2.7
+                    WHEN m.grade = 'C+' THEN 2.3
+                    WHEN m.grade = 'C'  THEN 2.0
+                    WHEN m.grade = 'C-' THEN 1.7
+                    WHEN m.grade = 'D'  THEN 1.3
+                    WHEN m.grade IN ('E','ECA & ESA') THEN 0
+                    ELSE 0
+                END * c.credit
+            ) / SUM(c.credit), 
+            2
+        ) AS sgpa
+    FROM marks m
+    JOIN student s ON s.user_id = m.student_id
+    JOIN course c ON c.course_id = m.course_id
+    GROUP BY s.user_id, s.reg_no, c.academic_year, c.semester
+) AS t
+ORDER BY t.user_id, t.academic_year, t.semester;
