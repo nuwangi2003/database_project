@@ -12,7 +12,7 @@ CREATE PROCEDURE get_student_course_marks (
 BEGIN
     SELECT 
         quiz1_marks + quiz2_marks + quiz3_marks AS `TOTAL QUIZ MARKS`,
-        assessment_marks,
+        assessment_marks AS `ASSESSMENT_MARKS`,
         mid_marks,
         final_theory + final_practical AS `FINAL EXAM MARKS`
     FROM marks
@@ -40,7 +40,7 @@ CREATE PROCEDURE get_student_eligibility(
 BEGIN
     SELECT a_d.session_type AS `PRACTICAL/THEORY`,a_d.eligibility AS `ELIGIBILITY FOR THE EXAM`
     FROM attendance_detailed AS a_d
-    WHERE a_d.user_id = p_user_id
+    WHERE a_d.student_id = p_user_id
       AND a_d.course_id = p_course_id;
 END $$
 
