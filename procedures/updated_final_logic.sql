@@ -1,10 +1,10 @@
-<<<<<<< HEAD
+
 -- ==============================
 -- 1️⃣ Attendance Triggers
 -- ==============================
-=======
+
 -- Attendance Triggers
->>>>>>> ab9a3b195859b395e31bd7e9f6835280403a8b60
+
 DELIMITER $$
 
 CREATE TRIGGER trg_attendance_before_insert
