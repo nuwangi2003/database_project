@@ -1,42 +1,60 @@
 DELIMITER $$
 
-CREATE PROCEDURE generate_full_student_report(IN p_reg_no VARCHAR(15))
+CREATE PROCEDURE generate_student_academic_report(IN p_reg_no VARCHAR(15))
 BEGIN
-    
-    SELECT 
-        sms.reg_no,
-        sms.course_id,
-        sms.course_name,
-        sms.ca_marks,
-        sms.final_marks,
-        sms.grade
-    FROM student_marks_summary sms
-    WHERE sms.reg_no = p_reg_no
-    ORDER BY sms.course_id;
+    DECLARE v_student_id VARCHAR(10);
 
     
-    SELECT 
-        spf.reg_no,
-        spf.academic_year,
-        spf.semester,
-        spf.sgpa,
-        spf.semester_result
-    FROM semester_pass_fail spf
-    WHERE spf.reg_no = p_reg_no
-    ORDER BY spf.academic_year, spf.semester;
+    SELECT user_id INTO v_student_id
+    FROM student
+    WHERE reg_no = p_reg_no;
 
     
-    SELECT 
-        sc.reg_no,
-        sc.academic_year,
-        sc.semester,
-        sc.cgpa,
-        sc.class_status
-    FROM student_class sc
-    WHERE sc.reg_no = p_reg_no;
+    IF v_student_id IS NULL THEN
+        SELECT CONCAT('No student found with reg_no: ', p_reg_no) AS message;
+    ELSE
+        
+        SELECT 
+            s.reg_no,
+            s.batch,
+            s.department_id
+        FROM student s
+        WHERE s.user_id = v_student_id;
+
+        
+        SELECT 
+            course_id,
+            course_name,
+            ca_marks,
+            final_marks,
+            ca_eligible,
+            final_eligible,
+            grade
+        FROM student_marks_summary
+        WHERE student_id = v_student_id;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            semester_result
+        FROM semester_pass_fail
+        WHERE reg_no = p_reg_no;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            cgpa,
+            class_status
+        FROM student_class
+        WHERE reg_no = p_reg_no;
+    END IF;
+
 END$$
 
 DELIMITER ;
+
 
 
 
