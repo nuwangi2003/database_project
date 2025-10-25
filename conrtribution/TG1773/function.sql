@@ -12,7 +12,7 @@ CREATE PROCEDURE get_student_course_marks (
 BEGIN
     SELECT 
         quiz1_marks + quiz2_marks + quiz3_marks AS `TOTAL QUIZ MARKS`,
-        assessment_marks,
+        assessment_marks AS `ASSESSMENT_MARKS`,
         mid_marks,
         final_theory + final_practical AS `FINAL EXAM MARKS`
     FROM marks
@@ -40,7 +40,7 @@ CREATE PROCEDURE get_student_eligibility(
 BEGIN
     SELECT a_d.session_type AS `PRACTICAL/THEORY`,a_d.eligibility AS `ELIGIBILITY FOR THE EXAM`
     FROM attendance_detailed AS a_d
-    WHERE a_d.user_id = p_user_id
+    WHERE a_d.student_id = p_user_id
       AND a_d.course_id = p_course_id;
 END $$
 
@@ -53,7 +53,7 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE get_batch_overall_eligibility_by_course (
+CREATE PROCEDURE  get_batch_marks_summary_by_course (
     IN p_course_name VARCHAR(100)
 )
 BEGIN
@@ -71,7 +71,7 @@ BEGIN
 
         ROUND(SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100, 2) AS eligible_percentage
 
-    FROM v_student_overall_eligibility soe
+    FROM student_overall_eligibility soe
     JOIN course c ON c.course_id = soe.course_id
     WHERE c.name = p_course_name
     GROUP BY c.course_id, c.academic_year, c.semester;
