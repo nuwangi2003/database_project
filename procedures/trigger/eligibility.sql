@@ -31,9 +31,9 @@ BEGIN
       AND exam_type = 'Final'
       AND status = 'Approved';
 
-    ------------------------
+
     -- CA Eligibility
-    ------------------------
+ 
     IF student_status = 'Suspended' THEN
         SET NEW.ca_eligible = 'WH';
     ELSEIF (NEW.quiz1_marks IS NULL OR NEW.quiz2_marks IS NULL OR NEW.quiz3_marks IS NULL
@@ -45,9 +45,8 @@ BEGIN
         SET NEW.ca_eligible = 'Eligible';
     END IF;
 
-    ------------------------
     -- Final Exam Eligibility (CA + ESA + Attendance)
-    ------------------------
+
     IF student_status = 'Suspended' THEN
         SET NEW.final_eligible = 'WH';
     ELSEIF (NEW.final_theory IS NULL OR NEW.final_practical IS NULL) AND final_med = 0 THEN
@@ -60,9 +59,9 @@ BEGIN
         SET NEW.final_eligible = 'Eligible';
     END IF;
 
-    ------------------------
+
     -- Calculate Final Marks if eligible
-    ------------------------
+    
     IF NEW.ca_eligible IN ('Eligible','MC') AND NEW.final_eligible IN ('Eligible','MC') THEN
         SET NEW.final_marks = NEW.ca_marks + NEW.final_theory + NEW.final_practical;
     ELSE
