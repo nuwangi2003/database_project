@@ -40,7 +40,7 @@ SELECT
     sas.medical_percentage,
     sas.eligibility
 FROM student_attendance_summary sas
-WHERE sas.reg_no = 'U013'  
+WHERE sas.reg_no = 'TG/2023/1701'  
 ORDER BY sas.course_id;
 
 
