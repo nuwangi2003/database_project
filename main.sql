@@ -1,8 +1,8 @@
--- 1. Create Database
+
 CREATE DATABASE IF NOT EXISTS db_project;
 USE db_project;
 
--- 2. Users Table
+
 CREATE TABLE users (
     user_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
@@ -11,14 +11,14 @@ CREATE TABLE users (
     role ENUM('Admin', 'Dean', 'Lecturer', 'Tech_Officer', 'Student') NOT NULL
 );
 
--- 3. Department Table
+
 CREATE TABLE department (
     department_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     faculty_name VARCHAR(100)
 );
 
--- 4. Student Table
+
 CREATE TABLE student (
     user_id VARCHAR(10) PRIMARY KEY,
     reg_no VARCHAR(15) UNIQUE NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE student (
         ON UPDATE CASCADE
 );
 
--- 5. Lecturer Table
+
 CREATE TABLE lecture (
     user_id VARCHAR(10) PRIMARY KEY,
     specialization VARCHAR(50),
@@ -42,7 +42,7 @@ CREATE TABLE lecture (
         ON UPDATE CASCADE
 );
 
--- 6. Dean Table
+
 CREATE TABLE dean (
     lecture_id VARCHAR(10) PRIMARY KEY,
     term_start DATE NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE dean (
         ON UPDATE CASCADE
 );
 
--- 7. Tech Officer Table
+
 CREATE TABLE tech_officer (
     user_id VARCHAR(10) PRIMARY KEY,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -60,7 +60,7 @@ CREATE TABLE tech_officer (
         ON UPDATE CASCADE
 );
 
--- 8. Course Table
+
 CREATE TABLE course (
     course_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE course (
     weekly_hours DECIMAL(4,2) DEFAULT 3.00
 );
 
--- 9. Session Table (Theory/Practical)
+
 CREATE TABLE session (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     course_id VARCHAR(10) NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE session (
         ON UPDATE CASCADE
 );
 
--- 10. Attendance Table (Updated for medical handling)
+
 CREATE TABLE attendance (
     attendance_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE attendance (
         ON UPDATE CASCADE
 );
 
--- 11. Marks Table (Updated for eligibility and grades)
+
 CREATE TABLE marks (
     marks_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
@@ -111,8 +111,8 @@ CREATE TABLE marks (
     mid_marks DECIMAL(5,2) CHECK (mid_marks BETWEEN 0 AND 100),
     final_theory DECIMAL(5,2) CHECK (final_theory BETWEEN 0 AND 100),
     final_practical DECIMAL(5,2) CHECK (final_practical BETWEEN 0 AND 100),
-    ca_marks DECIMAL(5,2),                                                       -- new: calculated from best 2 quizzes + assessment + mid
-    final_marks DECIMAL(5,2),                                                     -- total marks including CA + final exams
+    ca_marks DECIMAL(5,2),                                                       
+    final_marks DECIMAL(5,2),                                                     
     ca_eligible ENUM('Eligible','Not Eligible','MC','WH') DEFAULT 'Not Eligible',
     final_eligible ENUM('Eligible','Not Eligible','MC','WH','E*') DEFAULT 'Not Eligible',
     grade CHAR(10),
@@ -124,7 +124,7 @@ CREATE TABLE marks (
         ON UPDATE CASCADE
 );
 
--- 12. Medical Table (for CA, Mid, Final, Attendance medicals)
+
 CREATE TABLE medical (
     medical_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE medical (
         ON UPDATE CASCADE
 );
 
--- 13. Result Table (SGPA & CGPA)
+
 CREATE TABLE result (
     result_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
@@ -154,7 +154,7 @@ CREATE TABLE result (
         ON UPDATE CASCADE
 );
 
--- 14. Mapping Tables
+
 CREATE TABLE student_course (
     student_id VARCHAR(10),
     course_id VARCHAR(10),
@@ -168,7 +168,7 @@ CREATE TABLE student_course (
         ON UPDATE CASCADE
 );
 
--- 15. Lecture_Course Table
+
 CREATE TABLE lecture_course (
     lecture_id VARCHAR(10),
     course_id VARCHAR(10),
@@ -181,7 +181,7 @@ CREATE TABLE lecture_course (
         ON UPDATE CASCADE
 );
 
--- 16. lecture_dep Table
+
 CREATE TABLE lecture_department (
     lecture_id VARCHAR(10),
     department_id VARCHAR(10),
@@ -194,7 +194,7 @@ CREATE TABLE lecture_department (
         ON UPDATE CASCADE
 );
 
--- 17.dep_course table
+
 CREATE TABLE department_course (
     department_id VARCHAR(10),
     course_id VARCHAR(10),
