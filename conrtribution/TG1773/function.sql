@@ -1,7 +1,5 @@
 
 
-
-
 --give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
 
 
