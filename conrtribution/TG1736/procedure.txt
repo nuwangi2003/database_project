@@ -58,4 +58,4 @@ DELIMITER ;
 
 
 
-CALL generate_full_student_report('TG/2023/1704');
+CALL generate_student_academic_report('TG/2023/1701');

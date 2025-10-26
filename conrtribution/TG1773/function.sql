@@ -53,7 +53,7 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE get_batch_overall_eligibility_by_course (
+CREATE PROCEDURE  get_batch_marks_summary_by_course (
     IN p_course_name VARCHAR(100)
 )
 BEGIN
@@ -71,7 +71,7 @@ BEGIN
 
         ROUND(SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100, 2) AS eligible_percentage
 
-    FROM v_student_overall_eligibility soe
+    FROM student_overall_eligibility soe
     JOIN course c ON c.course_id = soe.course_id
     WHERE c.name = p_course_name
     GROUP BY c.course_id, c.academic_year, c.semester;
