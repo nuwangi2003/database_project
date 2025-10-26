@@ -296,7 +296,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         WHEN r.sgpa >= 2 THEN 'Pass'
         ELSE 'Fail'
@@ -319,7 +319,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(r.cgpa AS CHAR)
     END AS cgpa,
@@ -331,7 +331,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         WHEN r.cgpa >= 3.7 THEN 'First Class'
         WHEN r.cgpa >= 3.3 THEN 'Second Class (Upper)'
@@ -364,7 +364,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(r.sgpa AS CHAR)
     END AS sgpa,
@@ -376,7 +376,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(
             ROUND((
@@ -534,8 +534,6 @@ SELECT
 FROM student_overall_eligibility soe
 JOIN course c ON c.course_id = soe.course_id
 GROUP BY soe.course_id, c.name, c.academic_year, c.semester;
-
-
 
 
 

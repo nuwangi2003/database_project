@@ -106,13 +106,13 @@ Populate the database with sample data for users, students, courses, and marks. 
 ```sql
 -- Insert a User and Student
 INSERT INTO users VALUES ('U001', 'John Doe', 'john@uni.com', 'pass123', 'Student');
-INSERT INTO student VALUES ('U001', 'R001', '2025ICT01', 'Proper', 'D001');
+INSERT INTO student VALUES ('U001', 'R001', '2025ICT01', 'D001');
 
 -- Add a Course
 INSERT INTO course VALUES ('C001', 'Database Systems', 3, 2, '2', 60.00, 3.00);
 
 -- Enroll a Student
-INSERT INTO student_course VALUES ('U001', 'C001');
+INSERT INTO student_course VALUES ('U001', 'C001','Proper');
 
 -- Record Attendance
 INSERT INTO attendance (student_id, session_id, status) VALUES ('U001', 1, 'Present');
@@ -122,7 +122,7 @@ INSERT INTO marks (
     student_id, course_id, quiz1_marks, quiz2_marks, quiz3_marks,
     assessment_marks, mid_marks, final_theory, final_practical
 ) VALUES (
-    'U001', 'C001', 80, 70, 90, 85, 75, 60, 55
+    'U001', 'C001', 80, 70, 90, 85, 75, 32, 40
 );
 ```
 

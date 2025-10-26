@@ -48,5 +48,6 @@ GRANT SELECT ON db_project.batch_marks_summary TO 'student'@'localhost';
 GRANT SELECT ON db_project.student_marks_summary TO 'student'@'localhost';
 GRANT SELECT ON db_project.student_overall_eligibility TO 'student'@'localhost';
 GRANT SELECT ON db_project.batch_overall_eligibility TO 'student'@'localhost';
+GRANT SELECT ON db_project.final_student_report TO 'student'@'localhost';
 
 FLUSH PRIVILEGES;
