@@ -80,45 +80,54 @@ BEGIN
     INSERT INTO result(student_id, academic_year, sgpa, cgpa, total_credits)
     SELECT 
         s.user_id AS student_id,
-        MAX(c.academic_year) AS academic_year,  -- 
+        MAX(c.academic_year) AS academic_year,
+
+        -- SGPA (latest academic year)
         CASE 
             WHEN EXISTS (
-                SELECT 1 FROM marks m2
-                JOIN student_course sc2 ON sc2.student_id = m2.student_id AND sc2.course_id = m2.course_id
-                JOIN course c2 ON c2.course_id = m2.course_id
-                WHERE m2.student_id = s.user_id 
-                  AND (m2.grade='MC' OR sc2.status='Suspended')
-            )
-            THEN 'WH'
+                SELECT 1 
+                FROM marks m2
+                JOIN student_course sc2 
+                    ON sc2.student_id = m2.student_id 
+                   AND sc2.course_id = m2.course_id
+                WHERE m2.student_id = s.user_id
+                  AND (m2.grade = 'MC' OR sc2.status = 'Suspended')
+            ) THEN 'WH'
             ELSE ROUND(
-                SUM(c.credit * CASE m.grade
-                    WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
-                    WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
-                    WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
-                    WHEN 'D' THEN 1.3 ELSE 0 END
-                ) / 
-                SUM(CASE WHEN m.grade IN ('A+','A','A-','B+','B','B-','C+','C','C-','D') THEN c.credit ELSE 0 END)
-            ,2)
+                SUM(
+                    c.credit * CASE m.grade
+                        WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
+                        WHEN 'D' THEN 1.3 ELSE 0
+                    END
+                ) / NULLIF(SUM(c.credit), 0),
+            2)
         END AS sgpa,
+
+        -- CGPA (all completed courses)
         CASE 
             WHEN EXISTS (
-                SELECT 1 FROM marks m2
-                JOIN student_course sc2 ON sc2.student_id = m2.student_id AND sc2.course_id = m2.course_id
-                JOIN course c2 ON c2.course_id = m2.course_id
-                WHERE m2.student_id = s.user_id 
-                  AND (m2.grade='MC' OR sc2.status='Suspended')
-            )
-            THEN 'WH'
+                SELECT 1 
+                FROM marks m2
+                JOIN student_course sc2 
+                    ON sc2.student_id = m2.student_id 
+                   AND sc2.course_id = m2.course_id
+                WHERE m2.student_id = s.user_id
+                  AND (m2.grade = 'MC' OR sc2.status = 'Suspended')
+            ) THEN 'WH'
             ELSE ROUND(
-                SUM(c.credit * CASE m.grade
-                    WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
-                    WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
-                    WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
-                    WHEN 'D' THEN 1.3 ELSE 0 END
-                ) / 
-                SUM(CASE WHEN m.grade IN ('A+','A','A-','B+','B','B-','C+','C','C-','D') THEN c.credit ELSE 0 END)
-            ,2)
+                SUM(
+                    c.credit * CASE m.grade
+                        WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
+                        WHEN 'D' THEN 1.3 ELSE 0
+                    END
+                ) / NULLIF(SUM(c.credit), 0),
+            2)
         END AS cgpa,
+
         SUM(c.credit) AS total_credits
     FROM student s
     LEFT JOIN marks m ON m.student_id = s.user_id
@@ -128,6 +137,7 @@ BEGIN
 END$$
 
 DELIMITER ;
+
 
 CALL calculate_final_result();
 
