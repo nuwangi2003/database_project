@@ -216,7 +216,7 @@ DELIMITER ;
 
 
 
-CALL generate_full_student_report('TG/2023/1704');
+CALL generate_student_academic_report('TG/2023/1704');
 --give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
 
 
@@ -454,6 +454,59 @@ DELIMITER ;
 
 
 CALL get_student_overall_eligibility();
+
+
+
+
+-- Procedure to create final_student_report view
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS create_final_student_report_view$$
+
+CREATE PROCEDURE create_final_student_report_view()
+BEGIN
+    DECLARE sql_query TEXT;
+    DECLARE course_list TEXT;
+
+    -- Generate dynamic MAX(CASE ...) for each course
+    SELECT GROUP_CONCAT(
+        CONCAT(
+            'MAX(CASE WHEN course_id = ''', course_id, ''' THEN grade END) AS `', course_id, '`'
+        )
+        ORDER BY course_id
+        SEPARATOR ', '
+    ) INTO course_list
+    FROM (SELECT DISTINCT course_id FROM student_marks_summary) AS courses;
+
+    -- Build the full dynamic CREATE VIEW query
+    SET @sql_query = CONCAT(
+        'CREATE OR REPLACE VIEW final_student_report AS ',
+        'SELECT s.reg_no AS Index_no, u.name AS Student_name, ',
+        course_list, ', ',
+        'MAX(r.sgpa) AS sgpa, MAX(r.cgpa) AS cgpa ',
+        'FROM student_marks_summary m ',
+        'JOIN student s ON s.user_id = m.student_id ',
+        'JOIN `users` u ON u.user_id = s.user_id ',
+        'LEFT JOIN result r ON r.student_id = s.user_id ',
+        'GROUP BY s.reg_no, u.name ',
+        'ORDER BY s.reg_no'
+    );
+
+    -- Prepare and execute the dynamic CREATE VIEW
+    PREPARE stmt FROM @sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+END$$
+
+DELIMITER ;
+
+-- Call the procedure to create the view
+CALL create_final_student_report_view();
+
+--After calling, you can just do:
+SELECT * FROM final_student_report;
+
 
 
 
