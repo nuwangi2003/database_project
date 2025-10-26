@@ -292,7 +292,7 @@ BEGIN
                 WHERE m.student_id = r.student_id
                   AND c.academic_year = r.academic_year
                   AND c.semester = r.semester
-                  AND m.grade = 'MC'
+                  AND m.grade IN ('MC','WH')
             ) THEN 'WH'
             ELSE CAST(r.sgpa AS CHAR)
         END AS sgpa,
@@ -304,7 +304,7 @@ BEGIN
                 WHERE m.student_id = r.student_id
                   AND c.academic_year = r.academic_year
                   AND c.semester = r.semester
-                  AND m.grade = 'MC'
+                  AND m.grade IN ('MC','WH')
             ) THEN 'WH'
             ELSE CAST(
                 ROUND((
