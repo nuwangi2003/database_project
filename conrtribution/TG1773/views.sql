@@ -19,7 +19,7 @@ SELECT
 FROM attendance_combined ac
 JOIN course c ON c.course_id = ac.course_id
 GROUP BY c.course_id, c.academic_year, c.semester;
-
+ 
 
  
 --  Batch-level (aggregates student_overall_eligibility) CA+ ATTENCE
