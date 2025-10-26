@@ -19,13 +19,12 @@ GRANT CREATE USER ON *.* TO 'lecturer'@'localhost';
 CREATE USER 'technical_officer'@'localhost' IDENTIFIED BY 'Tech@123';
 
 GRANT SELECT, INSERT, UPDATE ON db_project.attendance TO 'technical_officer'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON db_project.session TO 'technical_officer'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON db_project.student TO 'technical_officer'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON db_project.medical TO 'technical_officer'@'localhost';
 
-GRANT SELECT, INSERT, UPDATE ON db_project.attendance_detailed TO 'technical_officer'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON db_project.attendance_combined TO 'technical_officer'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON db_project.student_attendance_summary TO 'technical_officer'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON db_project.student_attendance_details TO 'technical_officer'@'localhost';
+GRANT SELECT ON db_project.attendance_detailed TO 'technical_officer'@'localhost';
+GRANT SELECT ON db_project.attendance_combined TO 'technical_officer'@'localhost';
+GRANT SELECT ON db_project.student_attendance_summary TO 'technical_officer'@'localhost';
+GRANT SELECT ON db_project.student_attendance_details TO 'technical_officer'@'localhost';
 
 -- 5) Student: Read-only permission for final attendance and marks/grades tables/views
 CREATE USER 'student'@'localhost' IDENTIFIED BY 'Student@123';
@@ -42,12 +41,10 @@ GRANT SELECT ON db_project.semester_pass_fail TO 'student'@'localhost';
 GRANT SELECT ON db_project.student_class TO 'student'@'localhost';
 GRANT SELECT ON db_project.v_progressive_cgpa TO 'student'@'localhost';
 
--- Batch & overall summaries (optional for student view)
+-- Batch & overall summaries 
 GRANT SELECT ON db_project.batch_department_marks TO 'student'@'localhost';
 GRANT SELECT ON db_project.batch_marks_summary TO 'student'@'localhost';
 GRANT SELECT ON db_project.student_marks_summary TO 'student'@'localhost';
-GRANT SELECT ON db_project.student_overall_eligibility TO 'student'@'localhost';
-GRANT SELECT ON db_project.batch_overall_eligibility TO 'student'@'localhost';
 GRANT SELECT ON db_project.final_student_report TO 'student'@'localhost';
 
 FLUSH PRIVILEGES;

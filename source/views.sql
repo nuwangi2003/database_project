@@ -395,9 +395,7 @@ ORDER BY r.student_id, r.academic_year, r.semester;
 
 
 -- ==============================================================
--- View Name   : batch_department_marks
--- Description  : Displays each student's marks with batch,
---                department, course details, and pass/fail/withheld status.
+-- batch_department_marks
 -- ==============================================================
 
 CREATE OR REPLACE VIEW batch_department_marks AS
@@ -416,7 +414,7 @@ SELECT
     m.final_eligible,
     m.grade,
     CASE 
-        WHEN m.grade = 'MC' THEN 'WH'         -- Withheld due to Medical
+        WHEN m.grade IN ('MC','WH') THEN 'WH'         -- Withheld due to Medical
         WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA') THEN 'Fail'
         ELSE 'Pass'
     END AS status
