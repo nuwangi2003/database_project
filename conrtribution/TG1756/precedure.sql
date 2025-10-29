@@ -78,7 +78,7 @@ BEGIN
     INSERT INTO result(student_id, academic_year, sgpa, cgpa, total_credits)
     SELECT 
         s.user_id AS student_id,
-        MAX(c.academic_year) AS academic_year,  -- 
+        MAX(c.academic_year) AS academic_year,  
         CASE 
             WHEN EXISTS (
                 SELECT 1 FROM marks m2
