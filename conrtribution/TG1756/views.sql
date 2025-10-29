@@ -150,23 +150,13 @@ SELECT
     se.session_date,
     se.type AS session_type,
     CASE
-        WHEN m.exam_type = 'Attendance'
-             AND m.status = 'Approved'
-             AND m.course_id = se.course_id
-             AND m.date_submitted = se.session_date THEN 'MC'
         WHEN a.status = 'Present' THEN 'Present'
         WHEN a.status = 'Absent' THEN 'Absent'
-        ELSE 'Not Recorded'
+        ELSE 'N/R'
     END AS attendance_status
 FROM attendance a
 JOIN session se ON se.session_id = a.session_id
 JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
 JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-LEFT JOIN medical m
-    ON m.student_id = a.student_id
-   AND m.exam_type = 'Attendance'
-   AND m.status = 'Approved'
-   AND m.course_id = se.course_id            
-   AND m.date_submitted = se.session_date    
 ORDER BY s.reg_no, se.course_id, se.session_date;
