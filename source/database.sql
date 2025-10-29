@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS db_project;
 USE db_project;
 
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
@@ -12,14 +12,14 @@ CREATE TABLE users (
 );
 
 
-CREATE TABLE department (
+CREATE TABLE IF NOT EXISTS department (
     department_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     faculty_name VARCHAR(100)
 );
 
 
-CREATE TABLE student (
+CREATE TABLE IF NOT EXISTS student (
     user_id VARCHAR(10) PRIMARY KEY,
     reg_no VARCHAR(15) UNIQUE NOT NULL,
     batch VARCHAR(10),
@@ -33,7 +33,7 @@ CREATE TABLE student (
 );
 
 
-CREATE TABLE lecture (
+CREATE TABLE IF NOT EXISTS lecture (
     user_id VARCHAR(10) PRIMARY KEY,
     specialization VARCHAR(50),
     designation VARCHAR(50),
@@ -43,7 +43,7 @@ CREATE TABLE lecture (
 );
 
 
-CREATE TABLE dean (
+CREATE TABLE IF NOT EXISTS dean (
     lecture_id VARCHAR(10) PRIMARY KEY,
     term_start DATE NOT NULL,
     term_end DATE,
@@ -53,7 +53,7 @@ CREATE TABLE dean (
 );
 
 
-CREATE TABLE tech_officer (
+CREATE TABLE IF NOT EXISTS tech_officer (
     user_id VARCHAR(10) PRIMARY KEY,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
         ON DELETE CASCADE
@@ -61,7 +61,7 @@ CREATE TABLE tech_officer (
 );
 
 
-CREATE TABLE course (
+CREATE TABLE IF NOT EXISTS course (
     course_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     credit INT NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE course (
 );
 
 
-CREATE TABLE session (
+CREATE TABLE IF NOT EXISTS session (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     course_id VARCHAR(10) NOT NULL,
     session_date DATE NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE session (
 );
 
 
-CREATE TABLE attendance (
+CREATE TABLE IF NOT EXISTS attendance (
     attendance_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
     session_id INT NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE attendance (
 );
 
 
-CREATE TABLE marks (
+CREATE TABLE IF NOT EXISTS marks (
     marks_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
     course_id VARCHAR(10) NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE marks (
 );
 
 
-CREATE TABLE medical (
+CREATE TABLE IF NOT EXISTS medical (
     medical_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
     course_id VARCHAR(10),
@@ -141,7 +141,7 @@ CREATE TABLE medical (
 );
 
 
-CREATE TABLE result (
+CREATE TABLE IF NOT EXISTS result (
     result_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10) NOT NULL,
     academic_year INT CHECK (academic_year BETWEEN 1 AND 4),
@@ -155,7 +155,7 @@ CREATE TABLE result (
 );
 
 
-CREATE TABLE student_course (
+CREATE TABLE IF NOT EXISTS student_course (
     student_id VARCHAR(10),
     course_id VARCHAR(10),
     status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper',
@@ -169,7 +169,7 @@ CREATE TABLE student_course (
 );
 
 
-CREATE TABLE lecture_course (
+CREATE TABLE IF NOT EXISTS lecture_course (
     lecture_id VARCHAR(10),
     course_id VARCHAR(10),
     PRIMARY KEY (lecture_id, course_id),
@@ -182,7 +182,7 @@ CREATE TABLE lecture_course (
 );
 
 
-CREATE TABLE lecture_department (
+CREATE TABLE IF NOT EXISTS lecture_department (
     lecture_id VARCHAR(10),
     department_id VARCHAR(10),
     PRIMARY KEY (lecture_id, department_id),
@@ -195,7 +195,7 @@ CREATE TABLE lecture_department (
 );
 
 
-CREATE TABLE department_course (
+CREATE TABLE IF NOT EXISTS department_course (
     department_id VARCHAR(10),
     course_id VARCHAR(10),
     PRIMARY KEY (department_id, course_id),
