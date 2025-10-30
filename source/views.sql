@@ -154,26 +154,17 @@ SELECT
     se.session_date,
     se.type AS session_type,
     CASE
-        WHEN m.exam_type = 'Attendance'
-             AND m.status = 'Approved'
-             AND m.course_id = se.course_id
-             AND m.date_submitted = se.session_date THEN 'MC'
         WHEN a.status = 'Present' THEN 'Present'
         WHEN a.status = 'Absent' THEN 'Absent'
-        ELSE 'Not Recorded'
+        ELSE 'N/R'
     END AS attendance_status
 FROM attendance a
 JOIN session se ON se.session_id = a.session_id
 JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
 JOIN student s ON s.user_id = sc.student_id
 JOIN course c ON c.course_id = se.course_id
-LEFT JOIN medical m
-    ON m.student_id = a.student_id
-   AND m.exam_type = 'Attendance'
-   AND m.status = 'Approved'
-   AND m.course_id = se.course_id            
-   AND m.date_submitted = se.session_date    
 ORDER BY s.reg_no, se.course_id, se.session_date;
+
 
 
 
@@ -296,7 +287,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         WHEN r.sgpa >= 2 THEN 'Pass'
         ELSE 'Fail'
@@ -319,7 +310,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(r.cgpa AS CHAR)
     END AS cgpa,
@@ -331,7 +322,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         WHEN r.cgpa >= 3.7 THEN 'First Class'
         WHEN r.cgpa >= 3.3 THEN 'Second Class (Upper)'
@@ -364,7 +355,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(r.sgpa AS CHAR)
     END AS sgpa,
@@ -376,7 +367,7 @@ SELECT
             WHERE m.student_id = r.student_id
               AND c.academic_year = r.academic_year
               AND c.semester = r.semester
-              AND m.grade = 'MC'
+              AND m.grade IN ('MC','WH')
         ) THEN 'WH'
         ELSE CAST(
             ROUND((
@@ -395,9 +386,7 @@ ORDER BY r.student_id, r.academic_year, r.semester;
 
 
 -- ==============================================================
--- View Name   : batch_department_marks
--- Description  : Displays each student's marks with batch,
---                department, course details, and pass/fail/withheld status.
+-- batch_department_marks
 -- ==============================================================
 
 CREATE OR REPLACE VIEW batch_department_marks AS
@@ -416,7 +405,7 @@ SELECT
     m.final_eligible,
     m.grade,
     CASE 
-        WHEN m.grade = 'MC' THEN 'WH'         -- Withheld due to Medical
+        WHEN m.grade IN ('MC','WH') THEN 'WH'         -- Withheld due to Medical
         WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA') THEN 'Fail'
         ELSE 'Pass'
     END AS status
@@ -534,8 +523,6 @@ SELECT
 FROM student_overall_eligibility soe
 JOIN course c ON c.course_id = soe.course_id
 GROUP BY soe.course_id, c.name, c.academic_year, c.semester;
-
-
 
 
 

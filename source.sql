@@ -1,12 +1,456 @@
-
--- =====================================
--- CREATE DATABSE IF NOT EXITS
--- =====================================
-
+--db_name
 CREATE DATABASE IF NOT EXISTS db_project;
 USE db_project;
 
--- Before inser data once read the Documentation fail
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    role ENUM('Admin', 'Dean', 'Lecturer', 'Tech_Officer', 'Student') NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS department (
+    department_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    faculty_name VARCHAR(100)
+);
+
+
+CREATE TABLE IF NOT EXISTS student (
+    user_id VARCHAR(10) PRIMARY KEY,
+    reg_no VARCHAR(15) UNIQUE NOT NULL,
+    batch VARCHAR(10),
+    department_id VARCHAR(10),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (department_id) REFERENCES department(department_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS lecture (
+    user_id VARCHAR(10) PRIMARY KEY,
+    specialization VARCHAR(50),
+    designation VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS dean (
+    lecture_id VARCHAR(10) PRIMARY KEY,
+    term_start DATE NOT NULL,
+    term_end DATE,
+    FOREIGN KEY (lecture_id) REFERENCES lecture(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS tech_officer (
+    user_id VARCHAR(10) PRIMARY KEY,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS course (
+    course_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    credit INT NOT NULL,
+    academic_year INT CHECK (academic_year BETWEEN 1 AND 4),
+    semester ENUM('1', '2') NOT NULL,
+    total_hours DECIMAL(5,2) DEFAULT 50.00,
+    weekly_hours DECIMAL(4,2) DEFAULT 3.00
+);
+
+
+CREATE TABLE IF NOT EXISTS session (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id VARCHAR(10) NOT NULL,
+    session_date DATE NOT NULL,
+    session_hours DECIMAL(4,2) DEFAULT 3.00,
+    type ENUM('Theory', 'Practical') DEFAULT 'Theory',
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(10) NOT NULL,
+    session_id INT NOT NULL,
+    status ENUM('Present', 'Absent') NOT NULL,
+    medical BOOLEAN DEFAULT FALSE,
+    hours_attended DECIMAL(4,2) DEFAULT 0,
+    FOREIGN KEY (student_id) REFERENCES student(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES session(session_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS marks (
+    marks_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(10) NOT NULL,
+    course_id VARCHAR(10) NOT NULL,
+    quiz1_marks DECIMAL(5,2) CHECK (quiz1_marks BETWEEN 0 AND 100),
+    quiz2_marks DECIMAL(5,2) CHECK (quiz2_marks BETWEEN 0 AND 100),
+    quiz3_marks DECIMAL(5,2) CHECK (quiz3_marks BETWEEN 0 AND 100),
+    assessment_marks DECIMAL(5,2) CHECK (assessment_marks BETWEEN 0 AND 100),
+    mid_marks DECIMAL(5,2) CHECK (mid_marks BETWEEN 0 AND 100),
+    final_theory DECIMAL(5,2) CHECK (final_theory BETWEEN 0 AND 100),
+    final_practical DECIMAL(5,2) CHECK (final_practical BETWEEN 0 AND 100),
+    ca_marks DECIMAL(5,2),                                                       
+    final_marks DECIMAL(5,2),                                                     
+    ca_eligible ENUM('Eligible','Not Eligible','MC','WH') DEFAULT 'Not Eligible',
+    final_eligible ENUM('Eligible','Not Eligible','MC','WH','E*') DEFAULT 'Not Eligible',
+    grade CHAR(10),
+    FOREIGN KEY (student_id) REFERENCES student(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS medical (
+    medical_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(10) NOT NULL,
+    course_id VARCHAR(10),
+    exam_type ENUM( 'Mid', 'Final', 'Attendance') NOT NULL,
+    date_submitted DATE NOT NULL,
+    status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+    FOREIGN KEY (student_id) REFERENCES student(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS result (
+    result_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(10) NOT NULL,
+    academic_year INT CHECK (academic_year BETWEEN 1 AND 4),
+    semester ENUM('1','2') NOT NULL,
+    sgpa VARCHAR(10) ,
+    cgpa VARCHAR(10),
+    total_credits INT DEFAULT 0,
+    FOREIGN KEY (student_id) REFERENCES student(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS student_course (
+    student_id VARCHAR(10),
+    course_id VARCHAR(10),
+    status ENUM('Proper', 'Repeat', 'Suspended') DEFAULT 'Proper',
+    PRIMARY KEY (student_id, course_id),
+    FOREIGN KEY (student_id) REFERENCES student(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS lecture_course (
+    lecture_id VARCHAR(10),
+    course_id VARCHAR(10),
+    PRIMARY KEY (lecture_id, course_id),
+    FOREIGN KEY (lecture_id) REFERENCES lecture(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS lecture_department (
+    lecture_id VARCHAR(10),
+    department_id VARCHAR(10),
+    PRIMARY KEY (lecture_id, department_id),
+    FOREIGN KEY (lecture_id) REFERENCES lecture(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (department_id) REFERENCES department(department_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS department_course (
+    department_id VARCHAR(10),
+    course_id VARCHAR(10),
+    PRIMARY KEY (department_id, course_id),
+    FOREIGN KEY (department_id) REFERENCES department(department_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+-- ==============================
+-- Attendance Triggers
+-- ==============================
+DELIMITER $$
+
+CREATE TRIGGER trg_attendance_before_insert
+BEFORE INSERT ON attendance
+FOR EACH ROW
+BEGIN
+    DECLARE sessionHours DECIMAL(4,2);
+    DECLARE student_status ENUM('Proper','Repeat','Suspended');
+
+    SELECT s.session_hours, sc.status
+    INTO sessionHours, student_status
+    FROM session s
+    JOIN student_course sc
+        ON sc.student_id = NEW.student_id AND sc.course_id = s.course_id
+    WHERE s.session_id = NEW.session_id
+    LIMIT 1;
+
+    SET NEW.hours_attended = 0;
+
+    IF student_status != 'Suspended' THEN
+        IF NEW.status = 'Present' THEN
+            SET NEW.hours_attended = sessionHours;
+        ELSEIF NEW.status = 'Absent' THEN
+            IF EXISTS (
+                SELECT 1
+                FROM medical m
+                JOIN session s2 ON s2.session_id = NEW.session_id
+                WHERE m.student_id = NEW.student_id
+                  AND m.exam_type = 'Attendance'
+                  AND m.course_id = s2.course_id
+                  AND m.date_submitted = s2.session_date
+                  AND m.status = 'Approved'
+            ) THEN
+                SET NEW.hours_attended = sessionHours;
+            END IF;
+        END IF;
+    END IF;
+END$$
+
+
+CREATE TRIGGER trg_attendance_before_update
+BEFORE UPDATE ON attendance
+FOR EACH ROW
+BEGIN
+    DECLARE sessionHours DECIMAL(4,2);
+    DECLARE student_status ENUM('Proper','Repeat','Suspended');
+
+    SELECT s.session_hours, sc.status
+    INTO sessionHours, student_status
+    FROM session s
+    JOIN student_course sc
+        ON sc.student_id = NEW.student_id AND sc.course_id = s.course_id
+    WHERE s.session_id = NEW.session_id
+    LIMIT 1;
+
+    SET NEW.hours_attended = 0;
+
+    IF student_status != 'Suspended' THEN
+        IF NEW.status = 'Present' THEN
+            SET NEW.hours_attended = sessionHours;
+        ELSEIF NEW.status = 'Absent' THEN
+            IF EXISTS (
+                SELECT 1
+                FROM medical m
+                JOIN session s2 ON s2.session_id = NEW.session_id
+                WHERE m.student_id = NEW.student_id
+                  AND m.exam_type = 'Attendance'
+                  AND m.course_id = s2.course_id
+                  AND m.date_submitted = s2.session_date
+                  AND m.status = 'Approved'
+            ) THEN
+                SET NEW.hours_attended = sessionHours;
+            END IF;
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+-- ==============================
+-- CA Marks Calculation
+-- ==============================
+DELIMITER $$
+
+CREATE TRIGGER trg_ca_marks_before_insert
+BEFORE INSERT ON marks
+FOR EACH ROW
+BEGIN
+    DECLARE a,b,c,best_two_sum DOUBLE;
+
+    SET a = IFNULL(NEW.quiz1_marks,0);
+    SET b = IFNULL(NEW.quiz2_marks,0);
+    SET c = IFNULL(NEW.quiz3_marks,0);
+
+    SET best_two_sum = a + b + c - LEAST(a,b,c);
+    SET NEW.ca_marks = ROUND((best_two_sum/2*0.10)+ IFNULL(NEW.assessment_marks,0)*0.15+ IFNULL(NEW.mid_marks,0)*0.15,2);
+END$$
+
+
+CREATE TRIGGER trg_ca_marks_before_update
+BEFORE UPDATE ON marks
+FOR EACH ROW
+BEGIN
+    DECLARE a,b,c,best_two_sum DOUBLE;
+
+    SET a = IFNULL(NEW.quiz1_marks,0);
+    SET b = IFNULL(NEW.quiz2_marks,0);
+    SET c = IFNULL(NEW.quiz3_marks,0);
+
+    SET best_two_sum = a + b + c - LEAST(a,b,c);
+    SET NEW.ca_marks = ROUND((best_two_sum/2*0.10)
++ IFNULL(NEW.assessment_marks,0)*0.15+ IFNULL(NEW.mid_marks,0)*0.15,2);
+END$$
+
+DELIMITER ;
+
+
+-- ==================================================
+-- Final(CA,Final,Attendence) Eligibility Triggers
+-- ==================================================
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_marks_eligibility_before_insert
+BEFORE INSERT ON marks
+FOR EACH ROW
+BEGIN
+    DECLARE student_status ENUM('Proper','Repeat','Suspended');
+    DECLARE attendance_pct DECIMAL(6,2);
+    DECLARE mid_med, final_med INT DEFAULT 0;
+
+    SELECT sc.status INTO student_status
+    FROM student_course sc
+    WHERE sc.student_id = NEW.student_id AND sc.course_id = NEW.course_id
+    LIMIT 1;
+
+    SELECT attendance_percentage INTO attendance_pct
+    FROM student_attendance_summary
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
+    LIMIT 1;
+
+    SELECT COUNT(*) INTO mid_med
+    FROM medical
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id AND exam_type = 'Mid' AND status = 'Approved';
+
+    SELECT COUNT(*) INTO final_med
+    FROM medical
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
+    AND exam_type = 'Final' AND status = 'Approved';
+
+    -- CA eligibility
+    IF student_status = 'Suspended' THEN
+        SET NEW.ca_eligible = 'WH';
+    ELSEIF mid_med > 0 THEN
+        SET NEW.ca_eligible = 'MC';
+    ELSEIF IFNULL(NEW.ca_marks,0) < 20 THEN
+        SET NEW.ca_eligible = 'Not Eligible';
+    ELSE
+        SET NEW.ca_eligible = 'Eligible';
+    END IF;
+
+    -- Final eligibility
+    IF student_status = 'Suspended' THEN
+        SET NEW.final_eligible = 'WH';
+    ELSEIF student_status = 'Repeat' THEN
+        SET NEW.final_eligible = 'Eligible'; -- Attendance not considered for repeat
+    ELSEIF attendance_pct < 80 THEN
+        SET NEW.final_eligible = 'E*';
+    ELSEIF final_med > 0 THEN
+        SET NEW.final_eligible = 'MC';
+    ELSE
+        SET NEW.final_eligible = 'Eligible';
+    END IF;
+
+    -- Final marks
+    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)+ IFNULL(NEW.ca_marks,0),2);
+END$$
+
+
+CREATE TRIGGER trg_marks_eligibility_before_update
+BEFORE UPDATE ON marks
+FOR EACH ROW
+BEGIN
+    DECLARE student_status ENUM('Proper','Repeat','Suspended');
+    DECLARE attendance_pct DECIMAL(6,2);
+    DECLARE mid_med, final_med INT DEFAULT 0;
+
+    SELECT sc.status INTO student_status
+    FROM student_course sc
+    WHERE sc.student_id = NEW.student_id AND sc.course_id = NEW.course_id
+    LIMIT 1;
+
+    SELECT attendance_percentage INTO attendance_pct
+    FROM student_attendance_summary
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
+    LIMIT 1;
+
+    SELECT COUNT(*) INTO mid_med
+    FROM medical
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id
+    AND exam_type = 'Mid' AND status = 'Approved';
+
+    SELECT COUNT(*) INTO final_med
+    FROM medical
+    WHERE student_id = NEW.student_id AND course_id = NEW.course_id AND exam_type = 'Final' AND status = 'Approved';
+
+    -- CA eligibility
+    IF student_status = 'Suspended' THEN
+        SET NEW.ca_eligible = 'WH';
+    ELSEIF mid_med > 0 THEN
+        SET NEW.ca_eligible = 'MC';
+    ELSEIF IFNULL(NEW.ca_marks,0) < 20 THEN
+        SET NEW.ca_eligible = 'Not Eligible';
+    ELSE
+        SET NEW.ca_eligible = 'Eligible';
+    END IF;
+
+    -- Final eligibility
+    IF student_status = 'Suspended' THEN
+        SET NEW.final_eligible = 'WH';
+    ELSEIF student_status = 'Repeat' THEN
+        SET NEW.final_eligible = 'Eligible'; -- Attendance ignored
+    ELSEIF attendance_pct < 80 THEN
+        SET NEW.final_eligible = 'E*';
+    ELSEIF final_med > 0 THEN
+        SET NEW.final_eligible = 'MC';
+    ELSE
+        SET NEW.final_eligible = 'Eligible';
+    END IF;
+
+    SET NEW.final_marks = ROUND(((IFNULL(NEW.final_theory,0)+IFNULL(NEW.final_practical,0))*0.6)+ IFNULL(NEW.ca_marks,0),2);
+END$$
+
+DELIMITER ;
+
+
+-- Before inser data once read the Documentation file
 -- ===============================================================
 -- Data for Users Table
 -- ===============================================================
@@ -351,12 +795,6 @@ INSERT INTO medical (medical_id, student_id, course_id, exam_type, date_submitte
 (4,'U021','TMS1233','Mid','2025-04-14','Approved'),
 (5,'U025','ICT1222','Attendance','2025-02-10','Approved');
 
-
-
-
--- ==============================================================
--- Data for Attendance Table
--- =============================================================
 INSERT INTO attendance (attendance_id, student_id, session_id, status, medical, hours_attended) VALUES
 
 (1,'U013',1,'Present',FALSE,3.00),
@@ -2386,6 +2824,174 @@ INSERT INTO attendance (attendance_id, student_id, session_id, status, medical, 
 (2025,'U027',135,'Present',FALSE,3.00);
 
 
+-- ==========================
+-- Views  Attendance Related
+-- ==========================
+-- Detailed Attendance per Student per Course (Theory / Practical)
+
+CREATE OR REPLACE VIEW attendance_detailed AS
+SELECT
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+    se.type AS session_type,
+    GROUP_CONCAT(DISTINCT se.session_date ORDER BY se.session_date) AS session_dates,
+    COUNT(a.attendance_id) AS total_sessions,
+    SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+   
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+
+    ROUND(
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / SUM(se.session_hours) * 100,
+        100), 2
+    ) AS attendance_percentage,
+
+    CASE
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / SUM(se.session_hours)
+        ) >= 0.8 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS eligibility
+FROM attendance a
+JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
+JOIN course c ON c.course_id = se.course_id
+GROUP BY sc.student_id, se.course_id, se.type;
+
+
+
+-- Combined Attendance per Student per Course
+
+CREATE OR REPLACE VIEW attendance_combined AS
+SELECT
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
+    COUNT(a.attendance_id) AS total_sessions,
+    SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+
+    ROUND(
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours * 100,
+        100), 2
+    ) AS attendance_percentage,
+
+    CASE
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / c.total_hours
+        ) >= 0.8 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS eligibility
+
+FROM attendance a
+JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
+JOIN course c ON c.course_id = se.course_id
+GROUP BY sc.student_id, se.course_id;
+
+
+
+-- Individual Student Attendance Summary
+
+CREATE OR REPLACE VIEW student_attendance_summary AS
+SELECT
+    sc.student_id,
+    s.reg_no,
+    sc.status AS student_status,
+    se.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
+    SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) AS attended_hours,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END) AS medical_hours,
+    COUNT(a.attendance_id) AS total_sessions,
+    SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS sessions_present,
+    SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN 1 ELSE 0 END) AS sessions_medical,
+
+    ROUND(
+        LEAST(
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / SUM(se.session_hours) * 100,
+        100), 2
+    ) AS attendance_percentage,
+
+    ROUND(
+        (SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END)
+        / SUM(se.session_hours) * 100), 2
+    ) AS medical_percentage,
+
+    CASE
+        WHEN sc.status = 'Suspended' THEN 'Not Eligible'
+        WHEN (
+            (SUM(CASE WHEN a.status = 'Present' THEN se.session_hours ELSE 0 END) +
+             SUM(CASE WHEN a.status = 'Absent' AND a.medical = 1 THEN se.session_hours ELSE 0 END))
+            / SUM(se.session_hours)
+        ) >= 0.8 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS eligibility
+FROM attendance a
+JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
+JOIN course c ON c.course_id = se.course_id
+GROUP BY sc.student_id, se.course_id;
+
+
+
+-- Individual Session Attendance Details
+
+CREATE OR REPLACE VIEW student_attendance_details AS
+SELECT
+    s.reg_no,
+    a.student_id,
+    se.course_id,
+    c.name AS course_name,
+    se.session_date,
+    se.type AS session_type,
+    CASE
+        WHEN a.status = 'Present' THEN 'Present'
+        WHEN a.status = 'Absent' THEN 'Absent'
+        ELSE 'N/R'
+    END AS attendance_status
+FROM attendance a
+JOIN session se ON se.session_id = a.session_id
+JOIN student_course sc ON sc.student_id = a.student_id AND sc.course_id = se.course_id
+JOIN student s ON s.user_id = sc.student_id
+JOIN course c ON c.course_id = se.course_id
+ORDER BY s.reg_no, se.course_id, se.session_date;
+
+
+
 -- ==============================================
 -- Marks Data Insertions
 -- ==============================================
@@ -2482,6 +3088,890 @@ VALUES
 (88,'U027','ICT1253',66,68,73,80,68,45,46,NULL,NULL,'Eligible','Eligible',NULL),
 (89,'U027','TCS1212',71,53,85,50,58,98,0,NULL,NULL,'Eligible','Eligible',NULL),
 (90,'U027','TMS1233',65,81,58,70,67,86,0,NULL,NULL,'Eligible','Eligible',NULL);
+
+
+
+--- =============================================
+-- Procedure 1: Update marks with grades
+-- =============================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS update_marks_grades$$
+
+CREATE PROCEDURE update_marks_grades()
+BEGIN
+    DECLARE done_student INT DEFAULT FALSE;
+    DECLARE s_id VARCHAR(50);
+
+    DECLARE student_cursor CURSOR FOR SELECT DISTINCT student_id FROM marks;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done_student = TRUE;
+
+    OPEN student_cursor;
+
+    student_loop: LOOP
+        FETCH student_cursor INTO s_id;
+        IF done_student THEN LEAVE student_loop; END IF;
+
+        -- Update grades based on rules
+        UPDATE marks m
+        JOIN student_course sc ON sc.student_id = m.student_id AND sc.course_id = m.course_id
+        LEFT JOIN student_attendance_summary sas ON sas.student_id = m.student_id AND sas.course_id = m.course_id
+        SET m.grade = CASE
+            WHEN sc.status = 'Suspended' THEN 'WH'
+            WHEN m.ca_eligible = 'MC' OR m.final_eligible = 'MC' THEN 'MC'
+            WHEN sc.status='Proper' AND IFNULL(sas.attendance_percentage,100) < 80 THEN 'E*'
+            WHEN m.ca_eligible = 'Not Eligible' AND ((IFNULL(m.final_theory,0)+IFNULL(m.final_practical,0))*0.6) < 35 THEN 'ECA & ESA'
+            WHEN m.ca_eligible = 'Not Eligible' THEN 'ECA'
+            WHEN ((IFNULL(m.final_theory,0)+IFNULL(m.final_practical,0))*0.6) < 35 THEN 'ESA'
+            WHEN m.final_marks >= 85 THEN 'A+'
+            WHEN m.final_marks >= 75 THEN 'A'
+            WHEN m.final_marks >= 70 THEN 'A-'
+            WHEN m.final_marks >= 65 THEN 'B+'
+            WHEN m.final_marks >= 60 THEN 'B'
+            WHEN m.final_marks >= 55 THEN 'B-'
+            WHEN m.final_marks >= 50 THEN 'C+'
+            WHEN m.final_marks >= 45 THEN 'C'
+            WHEN m.final_marks >= 40 THEN 'C-'
+            WHEN m.final_marks >= 35 THEN 'D'
+            ELSE 'E'
+        END
+        WHERE m.student_id = s_id;
+
+        -- Cap repeat grades to 'C'
+        UPDATE marks m
+        JOIN student_course sc ON sc.student_id = m.student_id AND sc.course_id = m.course_id
+        SET m.grade = CASE
+            WHEN sc.status = 'Repeat' AND m.grade IN ('A+','A','A-','B+','B','B-','C+') THEN 'C'
+            ELSE m.grade
+        END
+        WHERE m.student_id = s_id;
+
+    END LOOP;
+
+    CLOSE student_cursor;
+END$$
+
+DELIMITER ;
+
+CALL update_marks_grades();
+
+
+-- =============================================
+-- Procedure 2: Calculate SGPA and CGPA
+-- =============================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS calculate_final_result$$
+
+CREATE PROCEDURE calculate_final_result()
+BEGIN
+    -- Clear previous results
+    TRUNCATE TABLE result;
+
+    -- Insert results per student
+    INSERT INTO result(student_id, academic_year, sgpa, cgpa, total_credits)
+    SELECT 
+        s.user_id AS student_id,
+        MAX(c.academic_year) AS academic_year,
+
+        -- SGPA (latest academic year)
+        CASE 
+            WHEN EXISTS (
+                SELECT 1 
+                FROM marks m2
+                JOIN student_course sc2 
+                    ON sc2.student_id = m2.student_id 
+                   AND sc2.course_id = m2.course_id
+                WHERE m2.student_id = s.user_id
+                  AND (m2.grade = 'MC' OR sc2.status = 'Suspended')
+            ) THEN 'WH'
+            ELSE ROUND(
+                SUM(
+                    c.credit * CASE m.grade
+                        WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
+                        WHEN 'D' THEN 1.3 ELSE 0
+                    END
+                ) / NULLIF(SUM(c.credit), 0),
+            2)
+        END AS sgpa,
+
+        -- CGPA (all completed courses)
+        CASE 
+            WHEN EXISTS (
+                SELECT 1 
+                FROM marks m2
+                JOIN student_course sc2 
+                    ON sc2.student_id = m2.student_id 
+                   AND sc2.course_id = m2.course_id
+                WHERE m2.student_id = s.user_id
+                  AND (m2.grade = 'MC' OR sc2.status = 'Suspended')
+            ) THEN 'WH'
+            ELSE ROUND(
+                SUM(
+                    c.credit * CASE m.grade
+                        WHEN 'A+' THEN 4.0 WHEN 'A' THEN 4.0 WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3 WHEN 'B' THEN 3.0 WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3 WHEN 'C' THEN 2.0 WHEN 'C-' THEN 1.7
+                        WHEN 'D' THEN 1.3 ELSE 0
+                    END
+                ) / NULLIF(SUM(c.credit), 0),
+            2)
+        END AS cgpa,
+
+        SUM(c.credit) AS total_credits
+    FROM student s
+    LEFT JOIN marks m ON m.student_id = s.user_id
+    LEFT JOIN course c ON c.course_id = m.course_id
+    GROUP BY s.user_id;
+
+END$$
+
+DELIMITER ;
+
+
+CALL calculate_final_result();
+
+
+
+
+-- ========================================
+-- Marks views(Resukts ,SGPA, CGPA)
+-- ========================================
+
+CREATE OR REPLACE VIEW student_results AS
+SELECT
+    t.user_id,
+    t.reg_no,
+    t.academic_year,
+    t.semester,
+    t.total_credits,
+
+    -- SGPA
+    CASE
+        WHEN t.is_suspended = 1 THEN 'WH'        -- Suspended student
+        WHEN t.has_mc = 1 THEN 'WH'             -- Any MC grade in semester
+        ELSE CAST(t.sgpa AS CHAR)
+    END AS sgpa,
+
+    -- CGPA
+    CASE
+        WHEN t.is_suspended = 1 THEN 'WH'       -- Suspended semester shows WH
+        WHEN t.has_mc = 1 THEN NULL             -- MC semester ignored
+        ELSE CAST(
+            ROUND(
+                SUM(CASE WHEN t.is_suspended = 0 AND t.has_mc = 0 THEN t.sgpa * t.total_credits ELSE 0 END)
+                OVER (
+                    PARTITION BY t.user_id
+                    ORDER BY t.academic_year, t.semester
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                )
+                /
+                NULLIF(
+                    SUM(CASE WHEN t.is_suspended = 0 AND t.has_mc = 0 THEN t.total_credits ELSE 0 END)
+                    OVER (
+                        PARTITION BY t.user_id
+                        ORDER BY t.academic_year, t.semester
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ), 0
+                ),
+            2
+            ) AS CHAR
+        )
+    END AS cgpa
+
+FROM (
+    SELECT
+        s.user_id,
+        s.reg_no,
+        c.academic_year,
+        c.semester,
+        SUM(c.credit) AS total_credits,
+
+        -- Numeric SGPA calculation for non-suspended/non-MC
+        ROUND(
+            SUM(
+                CASE
+                    WHEN m.grade = 'A+' THEN 4.0
+                    WHEN m.grade = 'A'  THEN 4.0
+                    WHEN m.grade = 'A-' THEN 3.7
+                    WHEN m.grade = 'B+' THEN 3.3
+                    WHEN m.grade = 'B'  THEN 3.0
+                    WHEN m.grade = 'B-' THEN 2.7
+                    WHEN m.grade = 'C+' THEN 2.3
+                    WHEN m.grade = 'C'  THEN 2.0
+                    WHEN m.grade = 'C-' THEN 1.7
+                    WHEN m.grade = 'D'  THEN 1.3
+                    ELSE 0
+                END * c.credit
+            ) / SUM(c.credit),
+            2
+        ) AS sgpa,
+
+        -- Suspended semester flag
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM student_course sc
+                WHERE sc.student_id = s.user_id
+                  AND sc.status = 'Suspended'
+                  AND sc.course_id IN (
+                      SELECT course_id FROM course
+                      WHERE academic_year = c.academic_year AND semester = c.semester
+                  )
+            ) THEN 1
+            ELSE 0
+        END AS is_suspended,
+
+        -- MC flag
+        CASE
+            WHEN SUM(CASE WHEN m.grade = 'MC' THEN 1 ELSE 0 END) > 0 THEN 1
+            ELSE 0
+        END AS has_mc
+
+    FROM marks m
+    JOIN student s ON s.user_id = m.student_id
+    JOIN course c ON c.course_id = m.course_id
+    GROUP BY s.user_id, s.reg_no, c.academic_year, c.semester
+) AS t
+
+ORDER BY t.user_id, t.academic_year, t.semester;
+
+
+
+-- Sem Pass or fail check
+CREATE OR REPLACE VIEW semester_pass_fail AS
+SELECT
+    s.reg_no,
+    r.academic_year,
+    r.semester,
+    r.sgpa,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM marks m
+            JOIN course c ON c.course_id = m.course_id
+            WHERE m.student_id = r.student_id
+              AND c.academic_year = r.academic_year
+              AND c.semester = r.semester
+              AND m.grade IN ('MC','WH')
+        ) THEN 'WH'
+        WHEN r.sgpa >= 2 THEN 'Pass'
+        ELSE 'Fail'
+    END AS semester_result
+FROM result r
+JOIN student s ON s.user_id = r.student_id;
+
+
+-- Class Check according to the current sem
+CREATE OR REPLACE VIEW student_class AS
+SELECT
+    s.reg_no,
+    r.academic_year,
+    r.semester,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM marks m
+            JOIN course c ON c.course_id = m.course_id
+            WHERE m.student_id = r.student_id
+              AND c.academic_year = r.academic_year
+              AND c.semester = r.semester
+              AND m.grade IN ('MC','WH')
+        ) THEN 'WH'
+        ELSE CAST(r.cgpa AS CHAR)
+    END AS cgpa,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM marks m
+            JOIN course c ON c.course_id = m.course_id
+            WHERE m.student_id = r.student_id
+              AND c.academic_year = r.academic_year
+              AND c.semester = r.semester
+              AND m.grade IN ('MC','WH')
+        ) THEN 'WH'
+        WHEN r.cgpa >= 3.7 THEN 'First Class'
+        WHEN r.cgpa >= 3.3 THEN 'Second Class (Upper)'
+        WHEN r.cgpa >= 3.0 THEN 'Second Class (Lower)'
+        WHEN r.cgpa >= 2.0 THEN 'Pass'
+        ELSE 'Fail'
+    END AS class_status
+FROM result r
+JOIN student s ON s.user_id = r.student_id
+WHERE (r.academic_year, r.semester) = (
+    SELECT r2.academic_year, r2.semester
+    FROM result r2
+    WHERE r2.student_id = r.student_id
+    ORDER BY r2.academic_year DESC, r2.semester DESC
+    LIMIT 1
+);
+
+-- Cgpa Check every sem
+CREATE OR REPLACE VIEW v_progressive_cgpa AS
+SELECT
+    r.student_id,
+    s.reg_no,
+    r.academic_year,
+    r.semester,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM marks m
+            JOIN course c ON c.course_id = m.course_id
+            WHERE m.student_id = r.student_id
+              AND c.academic_year = r.academic_year
+              AND c.semester = r.semester
+              AND m.grade IN ('MC','WH')
+        ) THEN 'WH'
+        ELSE CAST(r.sgpa AS CHAR)
+    END AS sgpa,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM marks m
+            JOIN course c ON c.course_id = m.course_id
+            WHERE m.student_id = r.student_id
+              AND c.academic_year = r.academic_year
+              AND c.semester = r.semester
+              AND m.grade IN ('MC','WH')
+        ) THEN 'WH'
+        ELSE CAST(
+            ROUND((
+                SELECT SUM(r2.sgpa) / COUNT(r2.sgpa)
+                FROM result r2
+                WHERE r2.student_id = r.student_id
+                  AND (
+                        r2.academic_year < r.academic_year
+                        OR (r2.academic_year = r.academic_year AND r2.semester <= r.semester)
+                      )
+            ), 2) AS CHAR)
+    END AS cgpa
+FROM result r
+JOIN student s ON s.user_id = r.student_id
+ORDER BY r.student_id, r.academic_year, r.semester;
+
+
+-- ==============================================================
+-- batch_department_marks
+-- ==============================================================
+
+CREATE OR REPLACE VIEW batch_department_marks AS
+SELECT 
+    s.user_id,
+    s.reg_no,
+    s.batch,
+    d.name AS department_name,
+    m.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+    m.ca_marks,
+    m.final_marks,
+    m.ca_eligible,
+    m.final_eligible,
+    m.grade,
+    CASE 
+        WHEN m.grade IN ('MC','WH') THEN 'WH'         -- Withheld due to Medical
+        WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA','E*') THEN 'Fail'
+        ELSE 'Pass'
+    END AS status
+FROM marks m
+JOIN student s 
+    ON s.user_id = m.student_id
+JOIN course c 
+    ON c.course_id = m.course_id
+LEFT JOIN department d 
+    ON s.department_id = d.department_id
+ORDER BY s.batch, d.name, s.reg_no, c.academic_year, c.semester;
+
+
+CREATE OR REPLACE VIEW batch_marks_summary AS
+SELECT 
+    m.course_id,
+    c.name AS course_name,
+    COUNT(*) AS total_students,
+    SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END) AS ca_eligible_students,
+    SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END) AS final_eligible_students,
+    ROUND(AVG(m.ca_marks),2) AS avg_ca_marks,
+    ROUND(AVG(m.final_marks),2) AS avg_final_marks,
+    ROUND((SUM(CASE WHEN m.ca_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS ca_eligible_percentage,
+    ROUND((SUM(CASE WHEN m.final_eligible = 'Eligible' THEN 1 ELSE 0 END)/COUNT(*))*100,2) AS final_eligible_percentage
+FROM marks m
+JOIN course c ON c.course_id = m.course_id
+GROUP BY m.course_id;
+
+
+CREATE OR REPLACE VIEW student_marks_summary AS
+SELECT 
+    m.student_id,
+    s.reg_no,
+    m.course_id,
+    c.name AS course_name,
+    m.ca_marks,
+    m.final_marks,
+    m.ca_eligible,
+    m.final_eligible,
+    m.grade
+FROM marks m
+JOIN student s ON s.user_id = m.student_id
+JOIN course c ON c.course_id = m.course_id;
+
+-- ==============================================
+--   Student Overall Eligibility Views With Attendance and CA
+-- ==============================================
+
+
+-- 1) Student-level overall eligibility (reg_no comes from student)
+CREATE OR REPLACE VIEW student_overall_eligibility AS
+SELECT 
+    m.student_id,
+    s.reg_no,
+    m.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
+    -- From attendance summary (may be NULL if no summary)
+    COALESCE(sas.attendance_percentage, 0)AS attendance_percentage,
+    COALESCE(sas.eligibility, 'Unknown')AS attendance_eligibility,
+
+    -- From marks table
+    m.ca_marks,
+    m.ca_eligible,
+    m.final_eligible,
+
+    -- Overall Eligibility Logic (handles NULLs conservatively)
+    CASE
+        WHEN COALESCE(sas.eligibility, 'Unknown') = 'Not Eligible' THEN 'Not Eligible (Attendance < 80%)'
+        WHEN COALESCE(m.ca_eligible, 'Not Eligible') = 'Not Eligible' THEN 'Not Eligible (CA Failed)'
+        WHEN COALESCE(m.final_eligible, 'Not Eligible') = 'Not Eligible' THEN 'Not Eligible (Final Failed)'
+        WHEN COALESCE(m.ca_eligible, '') = 'WH' OR COALESCE(m.final_eligible, '') = 'WH' THEN 'Withheld'
+        WHEN COALESCE(m.ca_eligible, '') = 'MC' OR COALESCE(m.final_eligible, '') = 'MC' THEN 'Eligible with Medical'
+        ELSE 'Fully Eligible'
+    END AS overall_eligibility
+FROM marks m
+-- attendance summary may be missing for some students -> LEFT JOIN
+LEFT JOIN student_attendance_summary sas
+    ON sas.student_id = m.student_id
+    AND sas.course_id = m.course_id
+-- course info
+JOIN course c
+    ON c.course_id = m.course_id
+-- student_course is useful if you want course-specific student status; keep if needed
+LEFT JOIN student_course sc
+    ON sc.student_id = m.student_id
+    AND sc.course_id = m.course_id
+-- reg_no is in student table
+JOIN student s
+    ON s.user_id = m.student_id
+;
+
+-- 2) Batch-level (aggregates student_overall_eligibility)
+CREATE OR REPLACE VIEW batch_overall_eligibility AS
+SELECT 
+    soe.course_id,
+    c.name AS course_name,
+    c.academic_year,
+    c.semester,
+
+    COUNT(*) AS total_students,
+    SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) AS fully_eligible,
+    SUM(CASE WHEN overall_eligibility LIKE 'Not Eligible%' THEN 1 ELSE 0 END) AS not_eligible,
+    SUM(CASE WHEN overall_eligibility = 'Eligible with Medical' THEN 1 ELSE 0 END) AS medical_cases,
+    SUM(CASE WHEN overall_eligibility = 'Withheld' THEN 1 ELSE 0 END) AS withheld_cases,
+
+    ROUND(
+      CASE WHEN COUNT(*) = 0 THEN 0
+           ELSE SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100
+      END
+    , 2) AS eligible_percentage
+
+FROM student_overall_eligibility soe
+JOIN course c ON c.course_id = soe.course_id
+GROUP BY soe.course_id, c.name, c.academic_year, c.semester;
+
+
+
+
+--  Procedure: generate_student_academic_report
+
+DELIMITER $$
+
+CREATE PROCEDURE generate_student_academic_report(IN p_reg_no VARCHAR(15))
+BEGIN
+    DECLARE v_student_id VARCHAR(10);
+
+    
+    SELECT user_id INTO v_student_id
+    FROM student
+    WHERE reg_no = p_reg_no;
+
+    
+    IF v_student_id IS NULL THEN
+        SELECT CONCAT('No student found with reg_no: ', p_reg_no) AS message;
+    ELSE
+        
+        SELECT 
+            s.reg_no,
+            s.batch,
+            s.department_id
+        FROM student s
+        WHERE s.user_id = v_student_id;
+
+        
+        SELECT 
+            course_id,
+            course_name,
+            ca_marks,
+            final_marks,
+            ca_eligible,
+            final_eligible,
+            grade
+        FROM student_marks_summary
+        WHERE student_id = v_student_id;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            semester_result
+        FROM semester_pass_fail
+        WHERE reg_no = p_reg_no;
+
+        
+        SELECT 
+            academic_year,
+            semester,
+            cgpa,
+            class_status
+        FROM student_class
+        WHERE reg_no = p_reg_no;
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+
+
+CALL generate_student_academic_report('TG/2023/1704');
+--give one student marks  CALL get_student_course_marks('U013', 'ICT1222');
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE get_student_course_marks (
+    IN p_reg_no VARCHAR(20),
+    IN p_course_id VARCHAR(20)
+)
+BEGIN
+    SELECT 
+        quiz1_marks + quiz2_marks + quiz3_marks AS `TOTAL QUIZ MARKS`,
+        assessment_marks AS `ASSESSMENT_MARKS`,
+        mid_marks,
+        final_theory + final_practical AS `FINAL EXAM MARKS`
+    FROM marks
+    WHERE student_id = p_reg_no
+      AND course_id = p_course_id;
+END $$
+
+DELIMITER ;
+CALL get_student_course_marks('U013', 'ICT1222');
+
+
+
+
+--  check one student eligibility CALL get_student_eligibility('U013', 'ICT1222');
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS get_student_eligibility$$
+
+
+CREATE PROCEDURE get_student_eligibility(
+    IN p_user_id VARCHAR(20),
+    IN p_course_id VARCHAR(20)
+)
+BEGIN
+    SELECT a_d.session_type AS `PRACTICAL/THEORY`,a_d.eligibility AS `ELIGIBILITY FOR THE EXAM`
+    FROM attendance_detailed AS a_d
+    WHERE a_d.student_id = p_user_id
+      AND a_d.course_id = p_course_id;
+END $$
+
+
+DELIMITER ;
+CALL get_student_eligibility('U013', 'ICT1222');
+
+----  one course check final marks and eligibility  CALL get_batch_marks_summary_by_course(''Database Management Systems'');
+DELIMITER $$
+
+CREATE PROCEDURE  get_batch_marks_summary_by_course (
+    IN p_course_name VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        c.course_id,
+        c.name AS course_name,
+        c.semester,
+
+        COUNT(*) AS total_students,
+        SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) AS fully_eligible,
+        SUM(CASE WHEN overall_eligibility LIKE 'Not Eligible%' THEN 1 ELSE 0 END) AS not_eligible,
+        SUM(CASE WHEN overall_eligibility = 'Eligible with Medical' THEN 1 ELSE 0 END) AS medical_cases,
+        SUM(CASE WHEN overall_eligibility = 'Withheld' THEN 1 ELSE 0 END) AS withheld_cases,
+
+        ROUND(SUM(CASE WHEN overall_eligibility = 'Fully Eligible' THEN 1 ELSE 0 END) / COUNT(*) * 100, 2) AS eligible_percentage
+
+    FROM student_overall_eligibility soe
+    JOIN course c ON c.course_id = soe.course_id
+    WHERE c.name = p_course_name
+    GROUP BY c.course_id, c.academic_year, c.semester;
+END $$
+DELIMITER ;
+CALL get_batch_marks_summary_by_course('Database Management Systems');
+
+
+
+
+-- Cgpa Check every sem
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS get_progressive_cgpa$$
+
+CREATE PROCEDURE get_progressive_cgpa(IN p_student_id VARCHAR(10))
+BEGIN
+    SELECT
+        r.student_id,
+        s.reg_no,
+        r.academic_year,
+        r.semester,
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM marks m
+                JOIN course c ON c.course_id = m.course_id
+                WHERE m.student_id = r.student_id
+                  AND c.academic_year = r.academic_year
+                  AND c.semester = r.semester
+                  AND m.grade IN ('MC','WH')
+            ) THEN 'WH'
+            ELSE CAST(r.sgpa AS CHAR)
+        END AS sgpa,
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM marks m
+                JOIN course c ON c.course_id = m.course_id
+                WHERE m.student_id = r.student_id
+                  AND c.academic_year = r.academic_year
+                  AND c.semester = r.semester
+                  AND m.grade IN ('MC','WH')
+            ) THEN 'WH'
+            ELSE CAST(
+                ROUND((
+                    SELECT SUM(r2.sgpa) / COUNT(r2.sgpa)
+                    FROM result r2
+                    WHERE r2.student_id = r.student_id
+                      AND (
+                            r2.academic_year < r.academic_year
+                            OR (r2.academic_year = r.academic_year AND r2.semester <= r.semester)
+                          )
+                ), 2) AS CHAR)
+        END AS cgpa
+    FROM result r
+    JOIN student s ON s.user_id = r.student_id
+    WHERE (p_student_id IS NULL OR r.student_id = p_student_id)
+    ORDER BY r.student_id, r.academic_year, r.semester;
+END$$
+
+DELIMITER ;
+
+
+CALL get_progressive_cgpa('U013');
+
+
+
+-- batch_department_marks
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS get_batch_department_marks$$
+
+CREATE PROCEDURE get_batch_department_marks(IN p_batch VARCHAR(10))
+BEGIN
+    SELECT 
+        s.user_id,
+        s.reg_no,
+        s.batch,
+        d.name AS department_name,
+        m.course_id,
+        c.name AS course_name,
+        c.academic_year,
+        c.semester,
+        m.ca_marks,
+        m.final_marks,
+        m.ca_eligible,
+        m.final_eligible,
+        m.grade,
+        CASE 
+            WHEN m.grade = 'MC' THEN 'WH'
+            WHEN m.grade IN ('E', 'ECA & ESA','ECA','ESA','E*') THEN 'Fail'
+            ELSE 'Pass'
+        END AS status
+    FROM marks m
+    JOIN student s 
+        ON s.user_id = m.student_id
+    JOIN course c 
+        ON c.course_id = m.course_id
+    LEFT JOIN department d 
+        ON s.department_id = d.department_id
+    WHERE (p_batch IS NULL OR s.batch = p_batch)
+    ORDER BY s.batch, d.name, s.reg_no, c.academic_year, c.semester;
+END$$
+
+DELIMITER ;
+
+CALL get_batch_department_marks('2023');
+
+
+
+
+
+
+-- Drop procedure if it exists
+DROP PROCEDURE IF EXISTS get_student_overall_eligibility;
+
+DELIMITER $$
+
+CREATE PROCEDURE get_student_overall_eligibility()
+BEGIN
+    SELECT 
+        m.student_id,
+        s.reg_no,
+        m.course_id,
+        c.name AS course_name,
+        c.academic_year,
+        c.semester,
+
+        -- From attendance summary (may be NULL if no summary)
+        COALESCE(sas.attendance_percentage, 0) AS attendance_percentage,
+        COALESCE(sas.eligibility, 'Unknown') AS attendance_eligibility,
+
+        -- From marks table
+        m.ca_marks,
+        m.ca_eligible,
+        m.final_eligible,
+
+        -- Overall Eligibility Logic
+        CASE
+            WHEN COALESCE(sas.eligibility, 'Unknown') = 'Not Eligible' 
+                THEN 'Not Eligible (Attendance < 80%)'
+            WHEN COALESCE(m.ca_eligible, 'Not Eligible') = 'Not Eligible' 
+                THEN 'Not Eligible (CA Failed)'
+            WHEN COALESCE(m.final_eligible, 'Not Eligible') = 'Not Eligible' 
+                THEN 'Not Eligible (Final Failed)'
+            WHEN COALESCE(m.ca_eligible, '') = 'WH' OR COALESCE(m.final_eligible, '') = 'WH' 
+                THEN 'Withheld'
+            WHEN COALESCE(m.ca_eligible, '') = 'MC' OR COALESCE(m.final_eligible, '') = 'MC' 
+                THEN 'Eligible with Medical'
+            ELSE 'Fully Eligible'
+        END AS overall_eligibility
+    FROM marks m
+    LEFT JOIN student_attendance_summary sas
+        ON sas.student_id = m.student_id
+        AND sas.course_id = m.course_id
+    JOIN course c
+        ON c.course_id = m.course_id
+    LEFT JOIN student_course sc
+        ON sc.student_id = m.student_id
+        AND sc.course_id = m.course_id
+    JOIN student s
+        ON s.user_id = m.student_id;
+END$$
+
+DELIMITER ;
+
+
+CALL get_student_overall_eligibility();
+
+
+
+
+-- Procedure to create final_student_report view
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS create_final_student_report_view$$
+
+CREATE PROCEDURE create_final_student_report_view()
+BEGIN
+    DECLARE sql_query TEXT;
+    DECLARE course_list TEXT;
+
+    -- Generate dynamic MAX(CASE ...) for each course
+    SELECT GROUP_CONCAT(
+        CONCAT(
+            'MAX(CASE WHEN course_id = ''', course_id, ''' THEN grade END) AS `', course_id, '`'
+        )
+        ORDER BY course_id
+        SEPARATOR ', '
+    ) INTO course_list
+    FROM (SELECT DISTINCT course_id FROM student_marks_summary) AS courses;
+
+    -- Build the full dynamic CREATE VIEW query
+    SET @sql_query = CONCAT(
+        'CREATE OR REPLACE VIEW final_student_report AS ',
+        'SELECT s.reg_no AS Index_no, u.name AS Student_name, ',
+        course_list, ', ',
+        'MAX(r.sgpa) AS sgpa, MAX(r.cgpa) AS cgpa ',
+        'FROM student_marks_summary m ',
+        'JOIN student s ON s.user_id = m.student_id ',
+        'JOIN `users` u ON u.user_id = s.user_id ',
+        'LEFT JOIN result r ON r.student_id = s.user_id ',
+        'GROUP BY s.reg_no, u.name ',
+        'ORDER BY s.reg_no'
+    );
+
+    -- Prepare and execute the dynamic CREATE VIEW
+    PREPARE stmt FROM @sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+END$$
+
+DELIMITER ;
+
+-- Call the procedure to create the view
+CALL create_final_student_report_view();
+
+-- After calling, you can just do:
+ -- SELECT * FROM final_student_report;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

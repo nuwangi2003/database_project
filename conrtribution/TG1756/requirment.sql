@@ -23,7 +23,7 @@ SELECT
     ac.attendance_percentage,
     ac.eligibility
 FROM attendance_combined ac
-WHERE ac.academic_year = '2025'   
+WHERE ac.academic_year = '1'   
   AND ac.semester = '1'           
 ORDER BY ac.reg_no, ac.course_id;
 

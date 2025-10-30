@@ -58,4 +58,8 @@ DELIMITER ;
 
 
 
+<<<<<<< HEAD:conrtribution/TG1736/procedure.txt
 CALL generate_student_academic_report('TG/2023/1701');
+=======
+CALL generate_student_academic_report('TG/2023/1704');
+>>>>>>> a70daf4c293c9bba75946fbd31ccec6f3516bad7:conrtribution/TG1736/procedure.sql
