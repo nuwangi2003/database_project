@@ -1,0 +1,12 @@
+-- tables
+SELECT * FROM attendance;
+SELECT * FROM marks;
+SELECT * FROM result;
+
+-- views 
+SELECT * FROM student_marks_summary;
+SELECT * FROM semester_pass_fail;
+SELECT * FROM student_class;
+
+-- procedure
+CALL generate_student_academic_report('TG/2023/1704');
