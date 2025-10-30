@@ -276,6 +276,8 @@ BEGIN
     WHERE c.name = p_course_name
     GROUP BY c.course_id, c.academic_year, c.semester;
 END $$
+DELIMITER ;
+CALL get_batch_marks_summary_by_course('Database Management Systems');
 
 
 
